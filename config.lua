@@ -1,5 +1,7 @@
 Config = {}
 
+Config.MinimumPolice = 0
+
 Config.RewardTypes = {
     [1] = {
         type = "item"
@@ -8,6 +10,15 @@ Config.RewardTypes = {
         type = "money",
         maxAmount = 500
     }
+}
+
+Config.VaultDoors = {
+    [1] = {
+        x = 974.67,
+        y = 56.43,
+        z = 60.38,
+        isOpen = false,
+    },
 }
 
 Config.Trolleys = {
@@ -33,9 +44,9 @@ Config.Trolleys = {
 
 Config.KeycardDoors = {
     [1] = {
-        x = 903.67,
-        y = 47.09,
-        z = 59.83,
+        x = 920.62,
+        y = 47.01,
+        z = 59.87,
         hit = false
     },
     [2] = {
@@ -54,6 +65,22 @@ Config.KeycardDoors = {
         x = 961.61,
         y = 16.08,
         z = 71.84,
+        hit = false
+    }
+}
+
+Config.DrillSpots = {
+    [1] = {
+        x = 996.28,
+        y = 69.24,
+        z = 59.83,
+        hit = false
+
+    },
+    [2] = {
+        x = 1000.96,
+        y = 66.72,
+        z = 59.83,
         hit = false
     }
 }

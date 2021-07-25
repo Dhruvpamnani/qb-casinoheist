@@ -1,0 +1,1 @@
+fixed required items tag not showing up (happened after adding drills to it)
