@@ -1,3 +1,5 @@
+Config = Config or {}
+
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
     isLoggedIn = true
