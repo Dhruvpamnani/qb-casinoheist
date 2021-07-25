@@ -37,7 +37,7 @@ Config.KeycardDoors = {
         hit = false
     },
     [2] = {
-        coords = vector(960.59, 18.07, 59.84), -- Stair Door
+        coords = vector3(960.59, 18.07, 59.84), -- Stair Door
     },
     [3] = {
         coords = vector3(949.88, 26.27, 71.83)

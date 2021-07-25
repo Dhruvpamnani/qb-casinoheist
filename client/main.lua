@@ -17,6 +17,9 @@ Citizen.CreateThread(function()
     local trolley1 = CreateObject(model, Config.Trolleys[1].x, Config.Trolleys[1].y, Config.Trolleys[1].z, true, true, false)
     local trolley2 = CreateObject(model, Config.Trolleys[2].x, Config.Trolleys[2].y, Config.Trolleys[2].z, true, true, false)
     local trolley3 = CreateObject(model, Config.Trolleys[3].x, Config.Trolleys[3].y, Config.Trolleys[3].z, true, true, false)
+    PlaceObjectOnGroundProperly(trolley1)
+    PlaceObjectOnGroundProperly(trolley2)
+    PlaceObjectOnGroundProperly(trolley3)
 end)
 
 Citizen.CreateThread(function() -- Blows Up the main vault door
