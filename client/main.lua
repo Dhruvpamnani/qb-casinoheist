@@ -40,6 +40,7 @@ end)
 
 Citizen.CreateThread(function()
     while true do
+        Citizen.Wait(0)
         DrawMarker(2, Config.KeycardDoors[1].x, Config.KeycardDoors[1].z, Config.KeycardDoors[1].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
     end
 end)
