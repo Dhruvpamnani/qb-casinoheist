@@ -33,16 +33,27 @@ Config.Trolleys = {
 
 Config.KeycardDoors = {
     [1] = {
-        coords = vector3(903.67, 47.09, 52.4), -- 2 doors before the vault door
+        x = 903.67,
+        y = 47.09,
+        z = 59.83,
         hit = false
     },
     [2] = {
-        coords = vector3(960.59, 18.07, 59.84), -- Stair Door
+        x = 960.59,
+        y = 18.07,
+        z = 59.84,
+        hit = false
     },
     [3] = {
-        coords = vector3(949.88, 26.27, 71.83)
+        x = 949.88,
+        y = 26.27,
+        z = 71.83,
+        hit = false
     },
     [4] = {
-        coords = vector3(961.61, 16.08, 71.84)
+        x = 961.61,
+        y = 16.08,
+        z = 71.84,
+        hit = false
     }
 }
