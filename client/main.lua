@@ -15,10 +15,11 @@ Citizen.CreateThread(function()
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
     for i = 1, 3 do
-        local obj = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 0.75, GetHashKey(model), false, false, false)
+        local obj = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 1, GetHashKey(model), true, true, false)
         print(obj)
         if DoesEntityExist(obj) then
-            DeleteEntity(obj)
+            print(1)
+            DeleteEntity(obj) -- SHOULD DELETE CARTS
         end
     end
     local trolley1 = CreateObject(model, Config.Trolleys[1].x, Config.Trolleys[1].y, Config.Trolleys[1].z, true, true, false)
@@ -26,7 +27,7 @@ Citizen.CreateThread(function()
     local trolley3 = CreateObject(model, Config.Trolleys[3].x, Config.Trolleys[3].y, Config.Trolleys[3].z, true, true, false)
 end)
 
-Citizen.CreateThread(function() -- Blows Up the main vault door
+Citizen.CreateThread(function() -- Blows Up the main vault door i guess maybe idk
     Citizen.Wait(2000)
     local requiredItems = {
         [1] = {name = QBCore.Shared.Items["electronickit"]["name"], image = QBCore.Shared.Items["electronickit"]["image"]},
@@ -38,5 +39,7 @@ Citizen.CreateThread(function() -- Blows Up the main vault door
 end)
 
 Citizen.CreateThread(function()
-    DrawMarker(2, Config.KeycardDoors[1].x, Config.KeycardDoors[1].z, Config.KeycardDoors[1].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
+    while true do
+        DrawMarker(2, Config.KeycardDoors[1].x, Config.KeycardDoors[1].z, Config.KeycardDoors[1].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
+    end
 end)
