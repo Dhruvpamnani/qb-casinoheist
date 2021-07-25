@@ -55,7 +55,7 @@ CreateThread(function()
         Wait(0)
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
-        for i = 1, 4 do
+        for i = 1, 4 do  --Note: see if we can remove all the for loops and replace with the [closestDoor] see line 278 for what im talking about
             local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
             if dist < 1 then
                 DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '[~b~E~s~] Hack')
@@ -102,7 +102,7 @@ CreateThread(function()
             if dist < 1 then
                 inRange = true
                 DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.3, '[~b~E~s~] Drill')
-                DrawMarker(2, Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
+                --DrawMarker(2, Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false) --Dont really even need was only used for testing
             end
         end
     end
@@ -123,12 +123,10 @@ function DrawText3Ds(x, y, z, text)
     ClearDrawOrigin()
 end
 CreateThread(function()
-    -- Wait(2000)
     local requiredItems = {
         [1] = {name = QBCore.Shared.Items["security_card_02"]["name"], image = QBCore.Shared.Items["security_card_02"]["image"]}
     }
     while true do
-        -- Wait(100)
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
 
@@ -156,12 +154,10 @@ CreateThread(function()
 end)
 
 CreateThread(function()  -- needs to be fixed causing required items to now show up
-    -- Wait(2000)
     local requiredItems2 = {
         [1] = {name = QBCore.Shared.Items["drill"]["name"], image = QBCore.Shared.Items["drill"]["image"]}
     }
     while true do
-        -- Wait(100)
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
 
@@ -195,22 +191,24 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
             TriggerEvent('inventory:client:requiredItems', requiredItems, false)
-            --SetEntityHeading(ped, 53.35)
-            StartHack(Config)
-            QBCore.Functions.Progressbar("hack_gate", "Inserting key...", 1000, false, true, {disableMovement = true,disableCarMovement = true,disableMouse = true,disableCombat = true,}, {
-            }, {}, {}, function() -- Done]]
-                TaskStartScenarioInPlace(ped, "PROP_HUMAN_ATM", 0, true)
-                Citizen.Wait(2000)
-                ClearPedTasksImmediately(ped)
-                --StartHack()
-                --TriggerEvent("mhacking:show")
-                --TriggerEvent("mhacking:start", math.random(6, 7), math.random(60, 120), OnHackDone)
+            StartHackAnim(Config)
+            QBCore.Functions.Progressbar("open_door", "Connecting...", 5000, false, true, {
+                disableMovement = true, 
+                disableCarMovement = true, 
+                disableMouse = true, 
+                disableCombat = true,
+            }, {}, {}, {}, function() -- Done]]
+                --TaskStartScenarioInPlace(ped, "PROP_HUMAN_ATM", 0, true)
+                --Citizen.Wait(2000)
+                --ClearPedTasksImmediately(ped)
+                TriggerEvent("mhacking:show")
+                TriggerEvent("mhacking:start", 7, Config.HackingTime, OnHackDone)
             end)
         end
     end, "security_card_02")
 end)
 
-RegisterNetEvent('drill:Usedrill')
+RegisterNetEvent('drill:Usedrill') -- Drills a full set of lockers
 AddEventHandler('drill:Usedrill', function()
     local ped = PlayerPedId()
     local pos = GetEntityCoords(ped)
@@ -219,10 +217,10 @@ AddEventHandler('drill:Usedrill', function()
             local DrillObject = CreateObject(GetHashKey("hei_prop_heist_drill"), pos.x, pos.y, pos.z, true, true, true)
             AttachEntityToEntity(DrillObject, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 57005), 0.14, 0, -0.01, 90.0, -90.0, 180.0, true, true, false, true, 1, true)
             TriggerEvent('inventory:client:requiredItems', requiredItems, false)
-            QBCore.Functions.Progressbar("drill_lock", "Drilling", math.random(5000, 10000), false, true, {
+            QBCore.Functions.Progressbar("drill_lock", "Drilling", math.random(10000, 30000), false, false, {
                 disableMovement = true,
                 disableCarMovement = true,
-                disableMouse = false,
+                disableMouse = true,
                 disableCombat = true,
             }, {
                 animDict = "anim@heists@fleeca_bank@drilling",
@@ -232,7 +230,7 @@ AddEventHandler('drill:Usedrill', function()
                 DetachEntity(DrillObject, true, true)
                 DeleteObject(DrillObject)
                 StopAnimTask(PlayerPedId(), "anim@heists@fleeca_bank@drilling", "drill_straight_start", 1.0)
-                QBCore.Functions.Notify('you got blank blank', "success")
+                QBCore.Functions.Notify('You got placeholder-number of items', "success")
                 DetachEntity(DrillObject, true, true)
                 DeleteObject(DrillObject)
             end)
@@ -243,10 +241,10 @@ end)
 function OnHackDone(success, timeremaining)
     if success then
         TriggerEvent('mhacking:hide')
-        QBCore.Functions.Notify('yes', "success")
+        QBCore.Functions.Notify('Success, your in!', "success")
     else
 		TriggerEvent('mhacking:hide')
-        QBCore.Functions.Notify('no', "error")
+        QBCore.Functions.Notify('Failed!', "error")
 	end
 end
 
@@ -259,18 +257,16 @@ end
 
 --Hacking Laptop Anim
 
-function StartHack(Config)
+function StartHackAnim(Config) -- bro i fucking give up
     local animDict = "anim@heists@ornate_bank@hack"
 
     RequestAnimDict(animDict)
     RequestModel("hei_prop_hst_laptop")
     RequestModel("hei_p_m_bag_var22_arm_s")
-    --RequestModel("hei_prop_heist_card_hack_02")
 
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("hei_prop_hst_laptop")
         or not HasModelLoaded("hei_p_m_bag_var22_arm_s") do
-        --or not HasModelLoaded("hei_prop_heist_card_hack_02") do
         Citizen.Wait(100)
     end
     local ped = PlayerPedId()
@@ -286,26 +282,22 @@ function StartHack(Config)
     NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "hack_enter_bag", 4.0, -8.0, 1)
     local laptop = CreateObject(GetHashKey("hei_prop_hst_laptop"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(laptop, netScene, animDict, "hack_enter_laptop", 4.0, -8.0, 1)
-    --local card = CreateObject(GetHashKey("hei_prop_heist_card_hack_02"), targetPosition, 1, 1, 0)
-    NetworkAddEntityToSynchronisedScene(card, netScene, animDict, "hack_enter_card", 4.0, -8.0, 1)
     -- part2
     local netScene2 = NetworkCreateSynchronisedScene(animPos2, targetRotation, 2, false, false, 1065353216, 0, 1.3)
     NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "hack_loop", 1.5, -4.0, 10, 16, 1148846080, 0)
-    NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "hack_loop_bag", 4.0, -8.0, 1)
-    NetworkAddEntityToSynchronisedScene(laptop, netScene2, animDict, "hack_loop_laptop", 4.0, -8.0, 1)
-    NetworkAddEntityToSynchronisedScene(card, netScene2, animDict, "hack_loop_card", 4.0, -8.0, 1)
+    NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "hack_loop_bag", 4.0, -80.0, 1)
+    NetworkAddEntityToSynchronisedScene(laptop, netScene2, animDict, "hack_loop_laptop", 4.0, -80.0, 1)
     -- part3
     local netScene3 = NetworkCreateSynchronisedScene(animPos3, targetRotation, 2, false, false, 1065353216, 0, 1.3)
     NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "hack_exit", 1.5, -4.0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "hack_exit_bag", 4.0, -8.0, 1)
     NetworkAddEntityToSynchronisedScene(laptop, netScene3, animDict, "hack_exit_laptop", 4.0, -8.0, 1)
-    NetworkAddEntityToSynchronisedScene(card, netScene3, animDict, "hack_exit_card", 4.0, -8.0, 1)
-    --event başlangıç
-    SetPedComponentVariation(ped, 5, 0, 0, 0) -- çantayı yok ediyoruz eğer varsa // removes bag from ped so no 2 bags
-    SetEntityHeading(ped, 63.60) -- Animasyon düzgün oturması için yön // for proper animation direction
+
+    SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
+    SetEntityHeading(ped, 63.60)
 
     NetworkStartSynchronisedScene(netScene)
-    Citizen.Wait(5000) -- Burayı deneyerek daha iyi hale getirebilirsiniz // You can try editing this to make transitions perfect
+    Citizen.Wait(5000) -- You can try editing this to make transitions perfect
     NetworkStopSynchronisedScene(netScene)
 
     NetworkStartSynchronisedScene(netScene2)
@@ -320,7 +312,7 @@ function StartHack(Config)
     DeleteObject(laptop)
     DeleteObject(card)
     FreezeEntityPosition(ped, false)
-    SetPedComponentVariation(ped, 5, 45, 0, 0) -- çantayı pede geri veriyor // gives bag back to ped
+    SetPedComponentVariation(ped, 5, 45, 0, 0)
 end
 
 
