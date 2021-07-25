@@ -1,4 +1,4 @@
-Config =r {}
+Config = {}
 
 Config.RewardTypes = {
     [1] = {
