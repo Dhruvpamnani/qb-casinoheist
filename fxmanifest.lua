@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 description 'QB-CasinoRobbery'
-version '0.0.0.0.0.0.0.0.1'
+version '1.0'
 
 shared_scripts { 
 	'@qb-core/import.lua',
@@ -10,7 +10,7 @@ shared_scripts {
 }
 
 client_scripts {
-    'client/*'.
+    'client/*',
 }
 
 server_scripts {
