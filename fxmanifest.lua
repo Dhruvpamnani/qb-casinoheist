@@ -10,13 +10,9 @@ shared_scripts {
 }
 
 client_scripts {
-    'server/*'.
+    'client/*'.
 }
 
 server_scripts {
-    'client/*',
-}
-
-files {
-    'files/*',
+    'server/*',
 }

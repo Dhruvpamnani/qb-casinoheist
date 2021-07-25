@@ -1,40 +1,15 @@
 QBCore = nil
 
-local inRange
-local requiredItemsShowed = false
-local copsCalled = false
-local PlayerJob = {}
-CurrentCops = 0
-
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(1000 * 60 * 5)
-        if copsCalled then
-            copsCalled = false
-        end
-    end
-end)
-
-RegisterNetEvent('QBCore:Client:OnJobUpdate')
-AddEventHandler('QBCore:Client:OnJobUpdate', function(JobInfo)
-    PlayerJob = JobInfo
-    onDuty = true
-end)
-
-RegisterNetEvent('police:SetCopCount')
-AddEventHandler('police:SetCopCount', function(amount)
-    CurrentCops = amount
-end)
-
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
-    PlayerJob = QBCore.Functions.GetPlayerData().job
-    QBCore.Functions.TriggerCallback('qb-bankrobbery:server:GetConfig', function(config)
-        Config = config
-    end)
-    onDuty = true
-    ResetBankDoors()
+    isLoggedIn = true
 end)
+
+RegisterNetEvent("QBCore:Client:OnPlayerUnload")
+AddEventHandler("QBCore:Client:OnPlayerUnload",function() 
+    isLoggedIn = false 
+end)
+
 
 function DrawText3Ds(x, y, z, text)
 	SetTextScale(0.35, 0.35)
