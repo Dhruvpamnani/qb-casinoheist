@@ -1,1 +1,3 @@
-fixed required items tag not showing up (happened after adding drills to it)
+fixed required items tag not showing up around line 133
+
+move vault door :kappa:
