@@ -47,25 +47,37 @@ Config.KeycardDoors = {
         x = 920.62,
         y = 47.01,
         z = 59.87,
-        hit = false
+        animationx = 920.62,
+        animationy = 47.01 + 1.3,
+        animationz =  59.87,
+        isOpen = false
     },
     [2] = {
         x = 960.59,
         y = 18.07,
         z = 59.84,
-        hit = false
+        animationx = 960.59 + 0.0,
+        animationy = 18.07 + 0.5,
+        animationz = 59.84,
+        isOpen = false
     },
     [3] = {
         x = 949.88,
         y = 26.27,
         z = 71.83,
-        hit = false
+        animationx = 949.88 + 0.2,
+        animationy = 26.2 + 0.2,
+        animationz = 71.83,
+        isOpen = false
     },
     [4] = {
         x = 961.61,
         y = 16.08,
         z = 71.84,
-        hit = false
+        animationx = 961.61 + 0.6,
+        animationy = 16.08 + 0.8,
+        animationz = 71.84,
+        isOpen = false
     }
 }
 
