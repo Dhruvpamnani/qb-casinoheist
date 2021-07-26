@@ -57,24 +57,10 @@ CreateThread(function()
         local pos = GetEntityCoords(ped)
         for i = 1, 4 do  --Note: see if we can remove all the for loops and replace with the [closestDoor] see line 278 for what im talking about
             local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
-            if dist < 1 then
+            if dist < 1 and not Config.KeycardDoors[i].isOpen then
                 DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '[~b~E~s~] Hack')
-                --DrawMarker(2, Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
-            end
-        end
-    end
-end)
-
-CreateThread(function()
-    while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        for i = 1, 4 do  --Note: see if we can remove all the for loops and replace with the [closestDoor] see line 278 for what im talking about
-            local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
-            if dist < 1 then
-                DrawText3Ds(975.17, 58.92, 59.85 + 0.3, '[~b~E~s~] Hack')
-                --DrawMarker(2, Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
+            elseif dist < 1 and Config.KeycardDoors[i].isOpen then
+                DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '~g~ Unlocked')
             end
         end
     end
@@ -112,12 +98,13 @@ CreateThread(function()
         Wait(0)
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
-        for i = 1, 2 do
+        for i = 1, 4 do
             local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-            if dist < 1 then
+            if dist < 1 and not Config.DrillSpots[i].hit then
                 inRange = true
-                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.3, '[~b~E~s~] Drill')
-                --DrawMarker(2, Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false) --Dont really even need was only used for testing
+                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
+            elseif dist < 1 and Config.DrillSpots[i].hit then
+                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '~r~ Empty')
             end
         end
     end
@@ -147,7 +134,7 @@ CreateThread(function()
 
         for i = 1, 4 do
             local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
-            if dist < 1 then
+            if dist < 1 and not Config.KeycardDoors[i].isOpen then
                 if IsControlJustPressed(0, 38) then
                     TriggerEvent('security_card_02:Usesecurity_card_02')
                     break
@@ -176,9 +163,9 @@ CreateThread(function()  -- needs to be fixed causing required items to now show
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
 
-        for i = 1, 2 do
+        for i = 1, 4 do
             local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-            if dist < 1 then
+            if dist < 1 and not Config.DrillSpots[i].hit then
                 if IsControlJustPressed(0, 38) then
                     TriggerEvent('drill:Usedrill')
                     break
@@ -206,16 +193,20 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
             TriggerEvent('inventory:client:requiredItems', requiredItems, false)
+            TriggerServerEvent("QBCore:Server:RemoveItem", "electronickit", 1)
+            TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["security_card_02"], "remove")
+            --TriggerServerEvent("QBCore:Server:RemoveItem", "security_card_02", 1)
+            SetEntityHeading(ped, Config.KeycardDoors[closestDoor].h)
             StartHackAnim(Config)
-            QBCore.Functions.Progressbar("open_door", "Connecting...", 5000, false, true, {
+            QBCore.Functions.Progressbar("open_door", "Connecting...", 3000, false, true, {
                 disableMovement = true, 
                 disableCarMovement = true, 
                 disableMouse = false, 
                 disableCombat = true,
             }, {}, {}, {}, function() -- Done]]
-                --TaskStartScenarioInPlace(ped, "PROP_HUMAN_ATM", 0, true)
-                --Citizen.Wait(2000)
-                --ClearPedTasksImmediately(ped)
+                TaskStartScenarioInPlace(ped, "PROP_HUMAN_ATM", 0, true)
+                Citizen.Wait(2000)
+                ClearPedTasksImmediately(ped)
                 TriggerEvent("mhacking:show")
                 TriggerEvent("mhacking:start", 7, Config.HackingTime, OnHackDone)
             end)
@@ -267,10 +258,10 @@ function OnHackDone(success, timeremaining)
 	end
 end
 
-function loadAnimDict( dict )
-    while ( not HasAnimDictLoaded( dict ) ) do
-        RequestAnimDict( dict )
-        Citizen.Wait( 5 )
+function loadAnimDict(dict)
+    while (not HasAnimDictLoaded(dict)) do
+        RequestAnimDict(dict)
+        Citizen.Wait(5)
     end
 end
 
