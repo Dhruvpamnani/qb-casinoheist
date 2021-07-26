@@ -4,6 +4,8 @@ Config.MinimumPolice = 0
 
 Config.HackingTime = 120
 
+Config.Items = nil
+
 Config.RewardTypes = {
     [1] = {
         type = "item"

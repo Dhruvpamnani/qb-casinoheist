@@ -59,7 +59,22 @@ CreateThread(function()
             local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
             if dist < 1 then
                 DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '[~b~E~s~] Hack')
-                DrawMarker(2, Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
+                --DrawMarker(2, Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
+            end
+        end
+    end
+end)
+
+CreateThread(function()
+    while true do
+        Wait(0)
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        for i = 1, 4 do  --Note: see if we can remove all the for loops and replace with the [closestDoor] see line 278 for what im talking about
+            local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
+            if dist < 1 then
+                DrawText3Ds(975.17, 58.92, 59.85 + 0.3, '[~b~E~s~] Hack')
+                --DrawMarker(2, Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.05, 255, 255, 255, 255, false, false, false, 1, false, false, false)
             end
         end
     end
@@ -195,7 +210,7 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
             QBCore.Functions.Progressbar("open_door", "Connecting...", 5000, false, true, {
                 disableMovement = true, 
                 disableCarMovement = true, 
-                disableMouse = true, 
+                disableMouse = false, 
                 disableCombat = true,
             }, {}, {}, {}, function() -- Done]]
                 --TaskStartScenarioInPlace(ped, "PROP_HUMAN_ATM", 0, true)
@@ -212,6 +227,9 @@ RegisterNetEvent('drill:Usedrill') -- Drills a full set of lockers
 AddEventHandler('drill:Usedrill', function()
     local ped = PlayerPedId()
     local pos = GetEntityCoords(ped)
+    if math.random(1, 100) <= 65 and not IsWearingHandshoes() then
+        TriggerServerEvent("evidence:server:CreateFingerDrop", pos)
+    end
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
             local DrillObject = CreateObject(GetHashKey("hei_prop_heist_drill"), pos.x, pos.y, pos.z, true, true, true)
@@ -220,13 +238,14 @@ AddEventHandler('drill:Usedrill', function()
             QBCore.Functions.Progressbar("drill_lock", "Drilling", math.random(10000, 30000), false, false, {
                 disableMovement = true,
                 disableCarMovement = true,
-                disableMouse = true,
+                disableMouse = false,
                 disableCombat = true,
             }, {
                 animDict = "anim@heists@fleeca_bank@drilling",
                 anim = "drill_straight_start",
                 flags = 1,
             }, {}, {}, function() -- Done
+               ----- GiveLockerItems()
                 DetachEntity(DrillObject, true, true)
                 DeleteObject(DrillObject)
                 StopAnimTask(PlayerPedId(), "anim@heists@fleeca_bank@drilling", "drill_straight_start", 1.0)
@@ -316,6 +335,15 @@ function StartHackAnim(Config) -- bro i fucking give up
 end
 
 
+
+
+
+
+
+
+
+
+
 --Cart Grab Anim
 
 function StartGrab(name)
@@ -354,7 +382,6 @@ function StartGrab(name)
 				    if IsEntityVisible(grabobj) then
                         SetEntityVisible(grabobj, false, false)
                         Wait(7000)
-                        TriggerServerEvent("utk_fh:rewardCash")
 				    end
 			    end
 		    end
@@ -415,4 +442,24 @@ function StartGrab(name)
 	SetModelAsNoLongerNeeded(emptyobj)
     SetModelAsNoLongerNeeded(GetHashKey("hei_p_m_bag_var22_arm_s"))
     disableinput = false
+end
+
+function IsWearingHandshoes()
+    local armIndex = GetPedDrawableVariation(PlayerPedId(), 3)
+    local model = GetEntityModel(PlayerPedId())
+    local retval = true
+    if model == GetHashKey("mp_m_freemode_01") then
+        if Config.MaleNoHandshoes[armIndex] ~= nil and Config.MaleNoHandshoes[armIndex] then
+            retval = false
+        end
+    else
+        if Config.FemaleNoHandshoes[armIndex] ~= nil and Config.FemaleNoHandshoes[armIndex] then
+            retval = false
+        end
+    end
+    return retval
+end
+
+function GiveLockerItems()
+    TriggerServerEvent('qb-casinoheist:server:recieveLockerItem')
 end
