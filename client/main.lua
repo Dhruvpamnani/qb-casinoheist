@@ -14,22 +14,6 @@ AddEventHandler("QBCore:Client:OnPlayerUnload",function()
     isLoggedIn = false 
 end)
 
-CreateThread(function()
-    local hash = "axhahsahah"
-    if not IsDoorRegisteredWithSystem(hash) then
-        AddDoorToSystem(hash, GetHashKey("ch_prop_ch_vaultdoor01x"), Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, false, false, false)
-    end
-    DoorSystemSetAutomaticDistance(hash, 0.0, false, false)
-    while true do
-        Wait(100)
-        if not Config.VaultDoors[1].isOpen then
-            DoorSystemSetDoorState(hash, 1, false, false)
-        else
-            DoorSystemSetDoorState(hash, 0, false, false)
-        end
-    end
-end)
-
 function SpawnCarts()
     local ped = PlayerPedId()
     local pos = GetEntityCoords(ped)
@@ -37,7 +21,25 @@ function SpawnCarts()
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
     for i = 1, 3 do
+        local obj = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
+        if obj ~= 0 then
+            DeleteEntity(obj)
+        end
         local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false) 
+    end
+end
+
+CreateThread(function()
+    OpenVault()
+end)
+
+function OpenVault()
+    local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
+    FreezeEntityPosition(door, true)
+    for i = 58, 190, 1 do
+        i = i + 0.0
+        SetEntityHeading(door, i)
+        Wait(i / 3.3)
     end
 end
 
@@ -91,11 +93,17 @@ CreateThread(function()
         local pos = GetEntityCoords(ped)
         for i = 1, 3 do
             local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
+            local check = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
             if dist < 3 then
                 inRange = true
-                DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '[~b~E~s~] Take')
-            elseif dist < 3 then
-                DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '~r~ Empty')
+                if check then
+                    DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '[~b~E~s~] Take')
+                    if IsControlJustPressed(0, 38) then
+                        StartGrab()
+                    end
+                else
+                    DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '~r~ Empty')
+                end
             end
         end
     end
@@ -132,24 +140,6 @@ function DrawText3Ds(x, y, z, text)
     DrawRect(0.0, 0.0+0.0125, 0.017+ factor, 0.03, 0, 0, 0, 75)
     ClearDrawOrigin()
 end
-
-CreateThread(function()
-    while true do
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-
-        for i = 1, 3 do
-            local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
-            if dist < 3 then
-                if IsControlJustPressed(0, 38) then
-                    StartGrab()
-                    print("test")
-                end
-            end
-        end
-        Wait(1)
-    end
-end)
 
 CreateThread(function()
     while true do

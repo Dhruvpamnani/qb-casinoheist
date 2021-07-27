@@ -11,7 +11,7 @@ Config.VaultDoors = {
         x = 974.67,
         y = 56.43,
         z = 60.38,
-        isOpen = true,
+        isOpen = false,
     },
 }
 
