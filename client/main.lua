@@ -29,8 +29,16 @@ function SpawnCarts()
     end
 end
 
-CreateThread(function()
+--CreateThread(function()
+--    OpenVault()
+--end)
+
+RegisterCommand("OpenVault", function()
     OpenVault()
+end)
+
+RegisterCommand("SpawnCarts", function()
+    SpawnCarts()
 end)
 
 function OpenVault()
@@ -43,6 +51,65 @@ function OpenVault()
     end
 end
 
+function DrawText3Ds(x, y, z, text)
+	SetTextScale(0.35, 0.35)
+    SetTextFont(4)
+    SetTextProportional(1)
+    SetTextColour(255, 255, 255, 215)
+    SetTextEntry("STRING")
+    SetTextCentre(true)
+    AddTextComponentString(text)
+    SetDrawOrigin(x,y,z, 0)
+    DrawText(0.0, 0.0)
+    local factor = (string.len(text)) / 370
+    DrawRect(0.0, 0.0+0.0125, 0.017+ factor, 0.03, 0, 0, 0, 75)
+    ClearDrawOrigin()
+end
+
+CreateThread(function()
+    while true do
+        Wait(0)
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        for i = 1, 3 do
+            local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
+            local check = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
+            if dist < 3 then
+                inRange = true
+                if check then
+                    DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '[~b~E~s~] Take')
+                    if IsControlJustPressed(0, 38) then
+                        StartGrab()
+                    end
+                elseif check and Config.Trolleys[i].hit then 
+                    DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
+                end
+            end
+        end
+    end
+end)
+
+CreateThread(function()
+    while true do
+        Wait(0)
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        for i = 1, 4 do
+            local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
+            if dist < 1 and not Config.DrillSpots[i].hit then
+                inRange = true
+                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
+                if IsControlJustPressed(0, 38) then
+                    Wait(500) -- Needed or closestDrill = nil aka big error
+                    TriggerEvent('drill:Usedrill')
+                end
+            elseif dist < 1 and Config.DrillSpots[i].hit then
+                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '~r~ Empty')
+            end
+        end
+    end
+end)
+
 CreateThread(function()
     while true do
         Wait(0)
@@ -52,10 +119,68 @@ CreateThread(function()
             local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
             if dist < 1 and not Config.KeycardDoors[i].isOpen then
                 DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '[~b~E~s~] Hack')
+                if IsControlJustPressed(0, 38) then
+                    TriggerEvent('security_card_02:Usesecurity_card_02')
+                    SpawnCarts()
+                end
             elseif dist < 1 and Config.KeycardDoors[i].isOpen then
                 DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '~g~ Unlocked')
             end
         end
+    end
+end)
+
+Citizen.CreateThread(function()
+    while true do
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        local dist
+
+        if QBCore ~= nil then
+            inRange = false
+
+            for k, v in pairs(Config.Trolleys) do
+                dist = #(pos - vector3(Config.Trolleys[k]["x"], Config.Trolleys[k]["y"], Config.Trolleys[k]["z"]))
+                if dist < 1 and Config.Trolleys[k].hit == false then
+                    closestTrolley = k
+                    inRange = true
+                end
+            end
+
+            if not inRange then
+                Citizen.Wait(500)
+                closestTrolley = nil
+            end
+        end
+
+        Citizen.Wait(3)
+    end
+end)
+
+Citizen.CreateThread(function()
+    while true do
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        local dist
+
+        if QBCore ~= nil then
+            inRange = false
+
+            for k, v in pairs(Config.DrillSpots) do
+                dist = #(pos - vector3(Config.DrillSpots[k]["x"], Config.DrillSpots[k]["y"], Config.DrillSpots[k]["z"]))
+                if dist < 1 and Config.DrillSpots[k].hit == false then
+                    closestDrill = k
+                    inRange = true
+                end
+            end
+
+            if not inRange then
+                Citizen.Wait(1000)
+                closestDrill = nil
+            end
+        end
+
+        Citizen.Wait(3)
     end
 end)
 
@@ -86,96 +211,6 @@ Citizen.CreateThread(function()
     end
 end)
 
-CreateThread(function()
-    while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        for i = 1, 3 do
-            local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
-            local check = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
-            if dist < 3 then
-                inRange = true
-                if check then
-                    DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '[~b~E~s~] Take')
-                    if IsControlJustPressed(0, 38) then
-                        StartGrab()
-                    end
-                else
-                    DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '~r~ Empty')
-                end
-            end
-        end
-    end
-end)
-
-CreateThread(function()
-    while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        for i = 1, 4 do
-            local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-            if dist < 1 and not Config.DrillSpots[i].hit then
-                inRange = true
-                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
-            elseif dist < 1 and Config.DrillSpots[i].hit then
-                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '~r~ Empty')
-            end
-        end
-    end
-end)
-
-function DrawText3Ds(x, y, z, text)
-	SetTextScale(0.35, 0.35)
-    SetTextFont(4)
-    SetTextProportional(1)
-    SetTextColour(255, 255, 255, 215)
-    SetTextEntry("STRING")
-    SetTextCentre(true)
-    AddTextComponentString(text)
-    SetDrawOrigin(x,y,z, 0)
-    DrawText(0.0, 0.0)
-    local factor = (string.len(text)) / 370
-    DrawRect(0.0, 0.0+0.0125, 0.017+ factor, 0.03, 0, 0, 0, 75)
-    ClearDrawOrigin()
-end
-
-CreateThread(function()
-    while true do
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-
-        for i = 1, 4 do
-            local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
-            if dist < 1 and not Config.KeycardDoors[i].isOpen then
-                if IsControlJustPressed(0, 38) then
-                    TriggerEvent('security_card_02:Usesecurity_card_02')
-                    SpawnCarts()
-                end
-            end
-        end
-        Wait(1)
-    end
-end)
-
-CreateThread(function()
-    while true do
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-
-        for i = 1, 4 do
-            local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-            if dist < 1 and not Config.DrillSpots[i].hit then
-                if IsControlJustPressed(0, 38) then
-                    TriggerEvent('drill:Usedrill')
-                end
-            end
-        end
-        Wait(1)
-    end
-end)
-
 RegisterNetEvent('security_card_02:Usesecurity_card_02')
 AddEventHandler('security_card_02:Usesecurity_card_02', function()
     local ped = PlayerPedId()
@@ -187,18 +222,6 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
             --TriggerServerEvent("QBCore:Server:RemoveItem", "security_card_02", 1)
             SetEntityHeading(ped, Config.KeycardDoors[closestDoor].h)
             StartHackAnim(Config)
-            QBCore.Functions.Progressbar("open_door", "Connecting...", 3000, false, true, {
-                disableMovement = true, 
-                disableCarMovement = true, 
-                disableMouse = false, 
-                disableCombat = true,
-            }, {}, {}, {}, function() -- Done]]
-                TaskStartScenarioInPlace(ped, "PROP_HUMAN_ATM", 0, true)
-                Citizen.Wait(2000)
-                ClearPedTasksImmediately(ped)
-                --TriggerEvent("mhacking:show")
-                --TriggerEvent("mhacking:start", Config.HackingSquare, Config.HackingTime, OnHackDone)
-            end)
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
@@ -226,6 +249,7 @@ AddEventHandler('drill:Usedrill', function()
                 anim = "drill_straight_start",
                 flags = 1,
             }, {}, {}, function() -- Done
+                Config.DrillSpots[closestDrill].hit = true
                 GiveLockerItems()
                 DetachEntity(DrillObject, true, true)
                 DeleteObject(DrillObject)
@@ -276,19 +300,19 @@ function StartHackAnim(Config) -- bro i fucking give up
     local animPos3 = GetAnimInitialOffsetPosition(animDict, "hack_exit", Config.KeycardDoors[closestDoor].animationx + 0, Config.KeycardDoors[closestDoor].animationy + 0, Config.KeycardDoors[closestDoor].animationz + 0.85)
     -- part1
     FreezeEntityPosition(ped, true)
-    local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, false, 1065353216, 0, 1.3)
+    local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.3)
     NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "hack_enter", 1.5, -4.0, 1, 16, 1148846080, 0)
     local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "hack_enter_bag", 4.0, -8.0, 1)
     local laptop = CreateObject(GetHashKey("hei_prop_hst_laptop"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(laptop, netScene, animDict, "hack_enter_laptop", 4.0, -8.0, 1)
     -- part2
-    local netScene2 = NetworkCreateSynchronisedScene(animPos2, targetRotation, 2, false, false, 1065353216, 0, 1.3)
+    local netScene2 = NetworkCreateSynchronisedScene(animPos2, targetRotation, 2, false, true, 1065353216, 0, 1.3)
     NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "hack_loop", 1.5, -4.0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "hack_loop_bag", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(laptop, netScene2, animDict, "hack_loop_laptop", 4.0, -80.0, 1)
     -- part3
-    local netScene3 = NetworkCreateSynchronisedScene(animPos3, targetRotation, 2, false, false, 1065353216, 0, 1.3)
+    local netScene3 = NetworkCreateSynchronisedScene(animPos3, targetRotation, 2, false, true, 1065353216, 0, 1.3)
     NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "hack_exit", 1.5, -4.0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "hack_exit_bag", 4.0, -8.0, 1)
     NetworkAddEntityToSynchronisedScene(laptop, netScene3, animDict, "hack_exit_laptop", 4.0, -8.0, 1)
@@ -302,32 +326,29 @@ function StartHackAnim(Config) -- bro i fucking give up
 
     NetworkStartSynchronisedScene(netScene2)
     Citizen.Wait(6600)
-    NetworkStopSynchronisedScene(netScene2)
+    exports['hacking']:OpenHackingGame(function(Success)
+        NetworkStopSynchronisedScene(netScene2)
 
-    NetworkStartSynchronisedScene(netScene3)
-    Citizen.Wait(4300)
-    NetworkStopSynchronisedScene(netScene3)
+        NetworkStartSynchronisedScene(netScene3)
+        Citizen.Wait(4300)
+        NetworkStopSynchronisedScene(netScene3)
 
-    DeleteObject(bag)
-    DeleteObject(laptop)
-    DeleteObject(card)
-    FreezeEntityPosition(ped, false)
-    SetPedComponentVariation(ped, 5, 45, 0, 0)
+        DeleteObject(bag)
+        DeleteObject(laptop)
+        DeleteObject(card)
+        FreezeEntityPosition(ped, false)
+        SetPedComponentVariation(ped, 5, 45, 0, 0)
+        if Success then
+            print("Passed!")
+        elseif not Success then
+            print("Failed!")
+        end
+    end)
 end
-
-
-
-
-
-
-
-
-
-
 
 --Cart Grab Anim
 
-function StartGrab(name)
+function StartGrab()
     disableinput = true
     local ped = PlayerPedId()
     local model = "hei_prop_heist_cash_pile"
@@ -415,6 +436,7 @@ function StartGrab(name)
 	end
 	DeleteObject(trollyobj)
     PlaceObjectOnGroundProperly(NewTrolley)
+    GiveCartItems()
 	Citizen.Wait(1800)
 	DeleteObject(bag)
     SetPedComponentVariation(ped, 5, 45, 0, 0)
@@ -442,4 +464,8 @@ end
 
 function GiveLockerItems()
     TriggerServerEvent('qb-casinoheist:server:recieveLockerItem')
+end
+
+function GiveCartItems()
+    TriggerServerEvent('qb-casinoheist:server:recieveCartItem')
 end
