@@ -44,9 +44,8 @@ function SpawnCarts()
             if DoesEntityExist(obj) then
                 DeleteEntity(obj) -- SHOULD DELETE CARTS
             end
-        else
-            local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false) 
         end
+        local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false) 
     end
 end
 
