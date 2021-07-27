@@ -37,12 +37,6 @@ function SpawnCarts()
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
     for i = 1, 3 do
-        if GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 1, GetHashKey(model), true, true, false) ~= nil then
-            local obj = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 1, GetHashKey(model), true, true, false)
-            if DoesEntityExist(obj) then
-                DeleteEntity(obj) -- SHOULD DELETE CARTS
-            end
-        end
         local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false) 
     end
 end
@@ -97,10 +91,10 @@ CreateThread(function()
         local pos = GetEntityCoords(ped)
         for i = 1, 3 do
             local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
-            if dist < 5 then
+            if dist < 3 then
                 inRange = true
                 DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '[~b~E~s~] Take')
-            elseif dist < 5 then
+            elseif dist < 3 then
                 DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '~r~ Empty')
             end
         end
@@ -138,6 +132,25 @@ function DrawText3Ds(x, y, z, text)
     DrawRect(0.0, 0.0+0.0125, 0.017+ factor, 0.03, 0, 0, 0, 75)
     ClearDrawOrigin()
 end
+
+CreateThread(function()
+    while true do
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+
+        for i = 1, 3 do
+            local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
+            if dist < 3 then
+                if IsControlJustPressed(0, 38) then
+                    StartGrab()
+                    print("test")
+                end
+            end
+        end
+        Wait(1)
+    end
+end)
+
 CreateThread(function()
     while true do
         local ped = PlayerPedId()
@@ -148,6 +161,7 @@ CreateThread(function()
             if dist < 1 and not Config.KeycardDoors[i].isOpen then
                 if IsControlJustPressed(0, 38) then
                     TriggerEvent('security_card_02:Usesecurity_card_02')
+                    SpawnCarts()
                 end
             end
         end
@@ -165,7 +179,6 @@ CreateThread(function()
             if dist < 1 and not Config.DrillSpots[i].hit then
                 if IsControlJustPressed(0, 38) then
                     TriggerEvent('drill:Usedrill')
-                    SpawnCarts()
                 end
             end
         end
@@ -193,8 +206,8 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
                 TaskStartScenarioInPlace(ped, "PROP_HUMAN_ATM", 0, true)
                 Citizen.Wait(2000)
                 ClearPedTasksImmediately(ped)
-                TriggerEvent("mhacking:show")
-                TriggerEvent("mhacking:start", Config.HackingSquare, Config.HackingTime, OnHackDone)
+                --TriggerEvent("mhacking:show")
+                --TriggerEvent("mhacking:start", Config.HackingSquare, Config.HackingTime, OnHackDone)
             end)
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
@@ -359,7 +372,6 @@ function StartGrab(name)
 			    if HasAnimEventFired(ped, GetHashKey("RELEASE_CASH_DESTROY")) then
 				    if IsEntityVisible(grabobj) then
                         SetEntityVisible(grabobj, false, false)
-                        Wait(7000)
 				    end
 			    end
 		    end
@@ -415,7 +427,7 @@ function StartGrab(name)
     PlaceObjectOnGroundProperly(NewTrolley)
 	Citizen.Wait(1800)
 	DeleteObject(bag)
-    SetPedComponentVariation(ped, 5, 87, 0, 0)
+    SetPedComponentVariation(ped, 5, 45, 0, 0)
 	RemoveAnimDict("anim@heists@ornate_bank@grab_cash")
 	SetModelAsNoLongerNeeded(emptyobj)
     SetModelAsNoLongerNeeded(GetHashKey("hei_p_m_bag_var22_arm_s"))
