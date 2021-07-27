@@ -4,17 +4,7 @@ Config.MinimumPolice = 0
 
 Config.HackingTime = 120
 
-Config.Items = nil
-
-Config.RewardTypes = {
-    [1] = {
-        type = "item"
-    },
-    [2] = {
-        type = "money",
-        maxAmount = 500
-    }
-}
+Config.HackingSquare = 3
 
 Config.VaultDoors = {
     [1] = {

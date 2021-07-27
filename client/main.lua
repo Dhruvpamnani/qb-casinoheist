@@ -1,7 +1,5 @@
 Config = Config or {}
 local inRange = false
-local requiredItemsShowed = false
-local requiredItemsShowed2 = false
 local closestBank = nil
 local cartsUp = false
 local isLoggedIn = false
@@ -44,9 +42,8 @@ function SpawnCarts()
             if DoesEntityExist(obj) then
                 DeleteEntity(obj) -- SHOULD DELETE CARTS
             end
-        else
-            local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false) 
         end
+        local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false) 
     end
 end
 
@@ -98,6 +95,23 @@ CreateThread(function()
         Wait(0)
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
+        for i = 1, 3 do
+            local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
+            if dist < 5 then
+                inRange = true
+                DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '[~b~E~s~] Take')
+            elseif dist < 5 then
+                DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 0.5, '~r~ Empty')
+            end
+        end
+    end
+end)
+
+CreateThread(function()
+    while true do
+        Wait(0)
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
         for i = 1, 4 do
             local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
             if dist < 1 and not Config.DrillSpots[i].hit then
@@ -125,9 +139,6 @@ function DrawText3Ds(x, y, z, text)
     ClearDrawOrigin()
 end
 CreateThread(function()
-    local requiredItems = {
-        [1] = {name = QBCore.Shared.Items["security_card_02"]["name"], image = QBCore.Shared.Items["security_card_02"]["image"]}
-    }
     while true do
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
@@ -137,17 +148,6 @@ CreateThread(function()
             if dist < 1 and not Config.KeycardDoors[i].isOpen then
                 if IsControlJustPressed(0, 38) then
                     TriggerEvent('security_card_02:Usesecurity_card_02')
-                    break
-                end
-                if not requiredItemsShowed then
-                    requiredItemsShowed = true
-                    TriggerEvent('inventory:client:requiredItems', requiredItems, true)
-                end
-                break
-            else
-                if requiredItemsShowed then
-                    requiredItemsShowed = false
-                    TriggerEvent('inventory:client:requiredItems', requiredItems, false)
                 end
             end
         end
@@ -155,10 +155,7 @@ CreateThread(function()
     end
 end)
 
-CreateThread(function()  -- needs to be fixed causing required items to now show up
-    local requiredItems2 = {
-        [1] = {name = QBCore.Shared.Items["drill"]["name"], image = QBCore.Shared.Items["drill"]["image"]}
-    }
+CreateThread(function()
     while true do
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
@@ -168,17 +165,7 @@ CreateThread(function()  -- needs to be fixed causing required items to now show
             if dist < 1 and not Config.DrillSpots[i].hit then
                 if IsControlJustPressed(0, 38) then
                     TriggerEvent('drill:Usedrill')
-                    break
-                end
-                if not requiredItemsShowed2 then
-                    requiredItemsShowed2 = true
-                    TriggerEvent('inventory:client:requiredItems', requiredItems2, true)
-                end
-                break
-            else
-                if requiredItemsShowed2 then
-                    requiredItemsShowed2 = false
-                    TriggerEvent('inventory:client:requiredItems', requiredItems2, false)
+                    SpawnCarts()
                 end
             end
         end
@@ -192,7 +179,6 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
     local pos = GetEntityCoords(ped)
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
-            TriggerEvent('inventory:client:requiredItems', requiredItems, false)
             TriggerServerEvent("QBCore:Server:RemoveItem", "electronickit", 1)
             TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["security_card_02"], "remove")
             --TriggerServerEvent("QBCore:Server:RemoveItem", "security_card_02", 1)
@@ -208,8 +194,10 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
                 Citizen.Wait(2000)
                 ClearPedTasksImmediately(ped)
                 TriggerEvent("mhacking:show")
-                TriggerEvent("mhacking:start", 7, Config.HackingTime, OnHackDone)
+                TriggerEvent("mhacking:start", Config.HackingSquare, Config.HackingTime, OnHackDone)
             end)
+        else
+            QBCore.Functions.Notify('You do not have the required items!', "error")
         end
     end, "security_card_02")
 end)
@@ -225,7 +213,6 @@ AddEventHandler('drill:Usedrill', function()
         if result then
             local DrillObject = CreateObject(GetHashKey("hei_prop_heist_drill"), pos.x, pos.y, pos.z, true, true, true)
             AttachEntityToEntity(DrillObject, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 57005), 0.14, 0, -0.01, 90.0, -90.0, 180.0, true, true, false, true, 1, true)
-            TriggerEvent('inventory:client:requiredItems', requiredItems, false)
             QBCore.Functions.Progressbar("drill_lock", "Drilling", math.random(10000, 30000), false, false, {
                 disableMovement = true,
                 disableCarMovement = true,
@@ -236,14 +223,13 @@ AddEventHandler('drill:Usedrill', function()
                 anim = "drill_straight_start",
                 flags = 1,
             }, {}, {}, function() -- Done
-               ----- GiveLockerItems()
+                GiveLockerItems()
                 DetachEntity(DrillObject, true, true)
                 DeleteObject(DrillObject)
                 StopAnimTask(PlayerPedId(), "anim@heists@fleeca_bank@drilling", "drill_straight_start", 1.0)
-                QBCore.Functions.Notify('You got placeholder-number of items', "success")
-                DetachEntity(DrillObject, true, true)
-                DeleteObject(DrillObject)
             end)
+        else
+            QBCore.Functions.Notify('You do not have the required items!', "error")
         end
     end, "drill")
 end)
@@ -252,6 +238,7 @@ function OnHackDone(success, timeremaining)
     if success then
         TriggerEvent('mhacking:hide')
         QBCore.Functions.Notify('Success, your in!', "success")
+        Config.KeycardDoors[closestDoor].isOpen = true
     else
 		TriggerEvent('mhacking:hide')
         QBCore.Functions.Notify('Failed!', "error")
