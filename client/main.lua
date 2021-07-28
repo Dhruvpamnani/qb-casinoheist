@@ -18,6 +18,7 @@ function SpawnCarts()
     local model = "hei_prop_hei_cash_trolly_01"
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
+    ClearAreaOfObjects(989.14, 50.54, 59.65, 10, 0)
     for i = 1, 3 do
         local obj = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 3.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
         if obj ~= 0 then
@@ -27,10 +28,6 @@ function SpawnCarts()
         local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false)
     end
 end
-
---CreateThread(function()
---    OpenVault()
---end)
 
 RegisterCommand("OpenVault", function()
     OpenVault()
@@ -72,15 +69,18 @@ CreateThread(function()
         for i = 1, 3 do
             local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
             if dist < 1.5 then
-                local check = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 3.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
+                local check = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 1.5, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
+                local check2 = IsAnyObjectNearPoint(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 1.0, true)
                 inRange = true
                 if check ~= 0 then
                     DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '[~b~E~s~] Take')
                     if IsControlJustPressed(0, 38) then
                         StartGrab()
                     end
-                else 
-                    DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
+                else
+                    if check2 then
+                        DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
+                    end
                 end
             end
         end
