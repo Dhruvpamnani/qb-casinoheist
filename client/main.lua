@@ -98,10 +98,10 @@ CreateThread(function()
                     DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '[~b~E~s~] Take')
                     if IsControlJustPressed(0, 38) then
                         StartGrab()
-                    else
-                        if check2 then
-                            DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
-                        end
+                    end
+                else
+                    if check2 then
+                        DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
                     end
                 end
             end
