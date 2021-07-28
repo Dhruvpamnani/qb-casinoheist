@@ -29,11 +29,22 @@ function SpawnCarts()
     end
 end
 
+CreateThread(function()
+    CloseVault()
+    SpawnPeds()
+end)
+
 RegisterCommand("OpenVault", function()
     OpenVault()
 end)
+RegisterCommand("CloseVault", function()
+    CloseVault()
+end)
 RegisterCommand("carty", function()
     SpawnCarts()
+end)
+RegisterCommand("strezsucks", function()
+    lol()
 end)
 
 function OpenVault()
@@ -42,7 +53,18 @@ function OpenVault()
     for i = 58, 190, 1 do
         i = i + 0.0
         SetEntityHeading(door, i)
-        Wait(i / 3.3)
+        Wait(i / 3.3) --3.3
+    end
+end
+
+function CloseVault()
+    local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
+    FreezeEntityPosition(door, true)
+    for i = 190, 302, 1 do
+        i = i + 0.0
+        print(-i)
+        SetEntityHeading(door, -i)
+        Wait(-i / 3.3) --3.3
     end
 end
 
@@ -76,10 +98,10 @@ CreateThread(function()
                     DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '[~b~E~s~] Take')
                     if IsControlJustPressed(0, 38) then
                         StartGrab()
-                    end
-                else
-                    if check2 then
-                        DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
+                    else
+                        if check2 then
+                            DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
+                        end
                     end
                 end
             end
@@ -105,6 +127,25 @@ end)
         end
     end
 end)]]
+
+CreateThread(function()
+    while true do
+        Wait(0)
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        local dist = #(pos - vector3(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z))
+        if dist < 1 then
+            inRange = true
+            DrawText3Ds(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z + 1, '[~b~E~s~] Hit')
+            if IsControlJustPressed(0, 38) then
+                Wait(500) -- Needed or closestDrill = nil aka big error
+                TriggerEvent('bomb:Usebomb')
+            end
+        elseif dist < 1 then
+            DrawText3Ds(Config.DrillSpots[1].x, Config.DrillSpots[1].y, Config.DrillSpots[1].z + 1, '~r~ Empty')
+        end
+    end
+end)
 
 CreateThread(function()
     while true do
@@ -234,7 +275,8 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
     local pos = GetEntityCoords(ped)
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
-            TriggerServerEvent("QBCore:Server:RemoveItem", "electronickit", 1)
+            SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true)
+            Wait(2000)
             TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["security_card_02"], "remove")
             --TriggerServerEvent("QBCore:Server:RemoveItem", "security_card_02", 1)
             SetEntityHeading(ped, Config.KeycardDoors[closestDoor].h)
@@ -254,28 +296,75 @@ AddEventHandler('drill:Usedrill', function()
     end
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
+            SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true)
+            Wait(2000)
             local DrillObject = CreateObject(GetHashKey("hei_prop_heist_drill"), pos.x, pos.y, pos.z, true, true, true)
             AttachEntityToEntity(DrillObject, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 57005), 0.14, 0, -0.01, 90.0, -90.0, 180.0, true, true, false, true, 1, true)
-            QBCore.Functions.Progressbar("drill_lock", "Drilling", math.random(10000, 30000), false, false, {
+            QBCore.Functions.Progressbar("drill_lock", "Drilling", math.random(5000, 7000), false, false, {
                 disableMovement = true,
                 disableCarMovement = true,
                 disableMouse = false,
                 disableCombat = true,
             }, {
-                animDict = "anim@heists@fleeca_bank@drilling",
-                anim = "drill_straight_start",
+                animDict = "anim_heist@hs3f@ig9_vault_drill@drill@",
+                anim = "drill_straight_fail",
                 flags = 1,
             }, {}, {}, function() -- Done
                 Config.DrillSpots[closestDrill].hit = true
                 GiveLockerItems()
                 DetachEntity(DrillObject, true, true)
                 DeleteObject(DrillObject)
-                StopAnimTask(PlayerPedId(), "anim@heists@fleeca_bank@drilling", "drill_straight_start", 1.0)
+                StopAnimTask(PlayerPedId(), "anim_heist@hs3f@ig9_vault_drill@drill@", "drill_straight_fail", 1.0)
+                Wait(500)
+                --TaskPlayAnim(PlayerPedId(), 'anim@heists@fleeca_bank@drilling', "drill_straight_fail", 3.0, -8, -1, 16, 0, 0, 0, 0 )
             end)
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
     end, "drill")
+end)
+
+RegisterNetEvent('bomb:Usebomb') -- Drills a full set of lockers
+AddEventHandler('bomb:Usebomb', function()
+    local ped = PlayerPedId()
+    local pos = GetEntityCoords(ped)
+    if math.random(1, 100) <= 65 and not IsWearingHandshoes() then
+        TriggerServerEvent("evidence:server:CreateFingerDrop", pos)
+    end
+    QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
+        if result then
+            RequestAnimDict('anim@heists@ornate_bank@thermal_charge_heels')
+			while not HasAnimDictLoaded('anim@heists@ornate_bank@thermal_charge_heels') do
+				Citizen.Wait(50)
+			end
+            SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true)
+            Wait(2000)
+            local x,y,z = table.unpack(GetEntityCoords(PlayerPedId()))
+            prop = CreateObject(GetHashKey('prop_ld_bomb'), x, y, z +0.2,  true,  true, true)
+			AttachEntityToEntity(prop, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 60309), 0.06, 0.0, 0.06, 90.0, 0.0, 0.0, true, true, false, true, 1, true)
+			SetCurrentPedWeapon(PlayerPedId(), GetHashKey("WEAPON_UNARMED"),true)
+			--FreezeEntityPosition(PlayerPedId(), true)
+			TaskPlayAnim(PlayerPedId(), 'anim@heists@ornate_bank@thermal_charge_heels', "thermal_charge", 3.0, -8, -1, 16, 0, 0, 0, 0 )
+			Citizen.Wait(5500)
+			ClearPedTasks(PlayerPedId())
+			DetachEntity(prop)
+            CreateObject(GetHashKey(prop), Config.VaultBomb.x, Config.VaultBomb.y, Config.VaultBomb.z, false, false, false)
+            QBCore.Functions.Notify('The load will be detonated in 7 seconds.', "error")
+            Wait(7000)
+            DeleteEntity(prop)
+            AddExplosion(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z, 6, 5.0, true, false, 15.0)
+            SpawnCarts()
+            OpenVault()
+            Wait(500)
+            AddExplosion(Config.VaultBomb[1].x - 2, Config.VaultBomb[1].y - 2, Config.VaultBomb[1].z, 3, 5.0, true, false, 0.0)
+            Wait(math.random(2000, 4000))
+            AddExplosion(Config.VaultBomb[1].x + 1, Config.VaultBomb[1].y + 1, Config.VaultBomb[1].z, 3, 5.0, true, false, 0.0)
+            --Wait(1000)
+            FreezeEntityPosition(PlayerPedId(), false)
+        else
+            QBCore.Functions.Notify('You do not have the required items!', "error")
+        end
+    end, "weapon_pipebomb")
 end)
 
 function loadAnimDict(dict)
@@ -348,6 +437,7 @@ function StartHackAnim(Config) -- bro i fucking give up
             print("Passed!")
         elseif not Success then
             print("Failed!")
+            Config.KeycardDoors[closestDoor].isOpen = true
         end
     end)
 end
@@ -428,7 +518,7 @@ function StartGrab()
 	NetworkAddEntityToSynchronisedScene(bag, scene2, "anim@heists@ornate_bank@grab_cash", "bag_grab", 4.0, -8.0, 1)
 	NetworkAddEntityToSynchronisedScene(trollyobj, scene2, "anim@heists@ornate_bank@grab_cash", "cart_cash_dissapear", 4.0, -8.0, 1)
 	NetworkStartSynchronisedScene(scene2)
-	Citizen.Wait(5000) -- 37000
+	Citizen.Wait(37000) -- 37000
 	local scene3 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
 	NetworkAddPedToSynchronisedScene(ped, scene3, "anim@heists@ornate_bank@grab_cash", "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
@@ -476,4 +566,45 @@ end
 
 function GiveCartItems()
     TriggerServerEvent('qb-casinoheist:server:recieveCartItem')
+end
+
+function SpawnPeds()
+    RequestModel("mp_m_freemode_01")
+    while not HasModelLoaded("mp_m_freemode_01") do
+        Wait(5)
+    end
+    for k, v in pairs(Config.Peds) do
+        local Yew = CreatePed(5, 'mp_m_freemode_01', v.x, v.y, v.z, v.h, 1, 1)
+        SetPedComponentVariation(Yew, 11, 317, 1, 0)
+        --SetPedComponentVariation(Yew, 3, 16, 0, 0)
+        SetPedComponentVariation(Yew, 0, math.random(0,44), 0, 0)
+        SetPedComponentVariation(Yew, 2, math.random(2, 15), math.random(1,5), 0)
+        SetPedComponentVariation(Yew, 8, 15, 0, 0)
+        SetPedComponentVariation(Yew, 4, 10, 0, 0)
+        SetPedComponentVariation(Yew, 9, 2, 0, 0)
+        SetPedComponentVariation(Yew, 6, 25, 0, 0)
+        SetPedComponentVariation(Yew, 13, 71, 0, 0)
+        SetPedHelmet(Yew, true)
+        SetPedPropIndex(Yew, 0, 88, 0, true)
+        SetPedArmour(Yew, 100)
+        SetPedShootRate(Yew, 500)
+        SetPedCombatAttributes(Yew, 46, true)
+        SetPedFleeAttributes(Yew, 0, 0)
+        SetPedAsEnemy(Yew,true)
+        SetPedMaxHealth(Yew, 200)
+        SetPedAlertness(Yew, 3)
+        SetPedCombatRange(Yew, 0)
+        SetPedCombatMovement(Yew, 1)
+        TaskCombatPed(Yew, PlayerPedId(), 0,16)
+        GiveWeaponToPed(Yew, GetHashKey("WEAPON_CARBINERIFLE_MK2"), 5000, true, true)
+        SetPedRelationshipGroupHash( Yew, GetHashKey("HATES_PLAYER"))
+        SetPedDropsWeaponsWhenDead(Yew, false)
+    end
+end
+
+function lol()
+    local ped = PlayerPedId()
+    veh = GetVehiclePedIsIn(ped, false)
+    SetVehicleLivery(veh, 6)
+    print(GetVehicleLivery(veh))
 end
