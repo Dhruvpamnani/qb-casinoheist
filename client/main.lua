@@ -1,7 +1,5 @@
 Config = Config or {}
 local inRange = false
-local closestBank = nil
-local cartsUp = false
 local isLoggedIn = false
 
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
@@ -21,11 +19,12 @@ function SpawnCarts()
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
     for i = 1, 3 do
-        local obj = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
+        local obj = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 3.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
         if obj ~= 0 then
-            DeleteEntity(obj)
+            DeleteObject(obj)
+            Wait(1)
         end
-        local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false) 
+        local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false)
     end
 end
 
@@ -35,6 +34,9 @@ end
 
 RegisterCommand("OpenVault", function()
     OpenVault()
+end)
+RegisterCommand("carty", function()
+    SpawnCarts()
 end)
 
 function OpenVault()
@@ -62,30 +64,30 @@ function DrawText3Ds(x, y, z, text)
     ClearDrawOrigin()
 end
 
---[[CreateThread(function()
+CreateThread(function()
     while true do
         Wait(0)
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
         for i = 1, 3 do
             local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
-            local check = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
-            if dist < 3 then
+            if dist < 1.5 then
+                local check = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 3.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
                 inRange = true
-                if check then
+                if check ~= 0 then
                     DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '[~b~E~s~] Take')
                     if IsControlJustPressed(0, 38) then
                         StartGrab()
                     end
-                elseif check and Config.Trolleys[i].hit then 
+                else 
                     DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
                 end
             end
         end
     end
-end)]]
+end)
 
-CreateThread(function()
+--[[CreateThread(function()
     while true do
         Wait(0)
         local ped = PlayerPedId()
@@ -102,7 +104,7 @@ CreateThread(function()
             end
         end
     end
-end)
+end)]]
 
 CreateThread(function()
     while true do
@@ -155,15 +157,15 @@ Citizen.CreateThread(function()
             inRange = false
 
             for k, v in pairs(Config.Trolleys) do
-                dist = #(pos - vector3(Config.Trolleys[k]["x"], Config.Trolleys[k]["y"], Config.Trolleys[k]["z"]))
-                if dist < 1 and Config.Trolleys[k].hit == false then
+                dist = #(pos - vector3(Config.Trolleys[k].x, Config.Trolleys[k].y, Config.Trolleys[k].z))
+                if dist < 3 and Config.Trolleys[k].hit == false then
                     closestTrolley = k
                     inRange = true
                 end
             end
 
             if not inRange then
-                Citizen.Wait(500)
+                Citizen.Wait(100)
                 closestTrolley = nil
             end
         end
@@ -426,7 +428,7 @@ function StartGrab()
 	NetworkAddEntityToSynchronisedScene(bag, scene2, "anim@heists@ornate_bank@grab_cash", "bag_grab", 4.0, -8.0, 1)
 	NetworkAddEntityToSynchronisedScene(trollyobj, scene2, "anim@heists@ornate_bank@grab_cash", "cart_cash_dissapear", 4.0, -8.0, 1)
 	NetworkStartSynchronisedScene(scene2)
-	Citizen.Wait(37000)
+	Citizen.Wait(5000) -- 37000
 	local scene3 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
 	NetworkAddPedToSynchronisedScene(ped, scene3, "anim@heists@ornate_bank@grab_cash", "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
@@ -439,6 +441,8 @@ function StartGrab()
 		NetworkRequestControlOfEntity(trollyobj)
 	end
 	DeleteObject(trollyobj)
+    DeleteEntity(trollyobj)
+    Wait(100)
     PlaceObjectOnGroundProperly(NewTrolley)
     GiveCartItems()
 	Citizen.Wait(1800)
