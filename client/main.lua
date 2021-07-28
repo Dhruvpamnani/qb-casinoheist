@@ -37,10 +37,6 @@ RegisterCommand("OpenVault", function()
     OpenVault()
 end)
 
-RegisterCommand("SpawnCarts", function()
-    SpawnCarts()
-end)
-
 function OpenVault()
     local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
     FreezeEntityPosition(door, true)
@@ -66,7 +62,7 @@ function DrawText3Ds(x, y, z, text)
     ClearDrawOrigin()
 end
 
-CreateThread(function()
+--[[CreateThread(function()
     while true do
         Wait(0)
         local ped = PlayerPedId()
@@ -83,6 +79,25 @@ CreateThread(function()
                     end
                 elseif check and Config.Trolleys[i].hit then 
                     DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
+                end
+            end
+        end
+    end
+end)]]
+
+CreateThread(function()
+    while true do
+        Wait(0)
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        for i = 1, 3 do
+            local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
+            if dist < 2 then
+                inRange = true
+                DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '[~b~E~s~] Take')
+                if IsControlJustPressed(0, 38) then
+                    Wait(500)
+                    StartGrab()
                 end
             end
         end
@@ -260,17 +275,6 @@ AddEventHandler('drill:Usedrill', function()
         end
     end, "drill")
 end)
-
-function OnHackDone(success, timeremaining)
-    if success then
-        TriggerEvent('mhacking:hide')
-        QBCore.Functions.Notify('Success, your in!', "success")
-        Config.KeycardDoors[closestDoor].isOpen = true
-    else
-		TriggerEvent('mhacking:hide')
-        QBCore.Functions.Notify('Failed!', "error")
-	end
-end
 
 function loadAnimDict(dict)
     while (not HasAnimDictLoaded(dict)) do
