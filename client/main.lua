@@ -43,9 +43,6 @@ end)
 RegisterCommand("carty", function()
     SpawnCarts()
 end)
-RegisterCommand("strezsucks", function()
-    lol()
-end)
 
 function OpenVault()
     local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
@@ -62,7 +59,6 @@ function CloseVault()
     FreezeEntityPosition(door, true)
     for i = 190, 302, 1 do
         i = i + 0.0
-        print(-i)
         SetEntityHeading(door, -i)
         Wait(-i / 3.3) --3.3
     end
@@ -600,11 +596,4 @@ function SpawnPeds()
         SetPedRelationshipGroupHash( Yew, GetHashKey("HATES_PLAYER"))
         SetPedDropsWeaponsWhenDead(Yew, false)
     end
-end
-
-function lol()
-    local ped = PlayerPedId()
-    veh = GetVehiclePedIsIn(ped, false)
-    SetVehicleLivery(veh, 6)
-    print(GetVehicleLivery(veh))
 end
