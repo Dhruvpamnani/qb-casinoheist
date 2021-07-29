@@ -1,9 +1,0 @@
-use keycard to unlock door
-
-get clean vault door open animation
-
-use pipe bomb(s) to blow up big door 
-
-a working drill animation
-
-cart animations def not stolen from utck-bankrobbery 
