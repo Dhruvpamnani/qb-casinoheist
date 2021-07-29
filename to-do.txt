@@ -1,9 +1,0 @@
-fixed required items tag not showing up around line 133
-
-move vault door :kappa:
-
-take MS down
-
-lock all doors
-
-required items is still broken asf
