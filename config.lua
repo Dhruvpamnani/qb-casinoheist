@@ -26,22 +26,22 @@ Config.VaultBomb = {
 
 Config.Trolleys = {
     [1] = {
-        x = 997.92,
-        y = 56.71,
+        x = 985.33,
+        y = 54.46,
         z = 58.83,
         h = 129.62,
         hit = false
     },
     [2] = {
-        x = 1000.18,
-        y = 48.69,
+        x = 993.23,
+        y = 50.15,
         z = 58.83,
         h = 69.12,
         hit = false
     },
     [3] = {
-        x = 995.54,
-        y = 41.67,
+        x = 1001.28,
+        y = 35.39,
         z = 58.83,
         h = 46.47,
         hit = false
@@ -73,7 +73,7 @@ Config.KeycardDoors = {
         x = 949.88,
         y = 26.27,
         z = 71.83,
-        h = 146.83,
+        h = 240.62,
         animationx = 949.88 + 0.2,
         animationy = 26.2 + 0.2,
         animationz = 71.83,

@@ -40,9 +40,6 @@ end)
 RegisterCommand("CloseVault", function()
     CloseVault()
 end)
-RegisterCommand("carty", function()
-    SpawnCarts()
-end)
 
 function OpenVault()
     local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
@@ -265,6 +262,26 @@ Citizen.CreateThread(function()
     end
 end)
 
+CreateThread(function()
+    while true do
+        Wait(0)
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        local dist
+        dist = #(pos - vector3(980.87, 12.43, 71.84))
+        dict = "anim@scripted@player@mission@tunf_bunk_ig3_nas_upload@"
+        if dist < 1 then
+            if IsControlJustPressed(0, 38) then
+                loadAnimDict(dict)
+                TaskPlayAnim(ped, dict, "05_dialogue_upload_speed", 3.0, -8, -1, 32, 0, 0, 0, 0 )
+                Wait(20000)
+                TaskPlayAnim(ped, dict, "12_outro_renumeration", 3.0, -8, -1, 32, 0, 0, 0, 0 )
+                print("disabled cams")
+            end
+        end
+    end
+end)
+
 RegisterNetEvent('security_card_02:Usesecurity_card_02')
 AddEventHandler('security_card_02:Usesecurity_card_02', function()
     local ped = PlayerPedId()
@@ -311,39 +328,13 @@ AddEventHandler('bomb:Usebomb', function()
     end
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
-            RequestAnimDict('anim@heists@ornate_bank@thermal_charge_heels')
-			while not HasAnimDictLoaded('anim@heists@ornate_bank@thermal_charge_heels') do
-				Citizen.Wait(50)
-			end
-            RequestAnimDict('anim_heist@hs3f@ig8_vault_explosive_react@right@male@')
-			while not HasAnimDictLoaded('anim_heist@hs3f@ig8_vault_explosive_react@right@male@') do
-				Citizen.Wait(50)
-			end
-            SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true)
-            Wait(2000)
-            local x,y,z = table.unpack(GetEntityCoords(PlayerPedId()))
-            prop = CreateObject(GetHashKey('prop_ld_bomb'), x, y, z +0.2,  true,  true, true)
-			AttachEntityToEntity(prop, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 60309), 0.06, 0.0, 0.06, 90.0, 0.0, 0.0, true, true, false, true, 1, true)
-			SetCurrentPedWeapon(PlayerPedId(), GetHashKey("WEAPON_UNARMED"),true)
-			--FreezeEntityPosition(PlayerPedId(), true)
-			TaskPlayAnim(PlayerPedId(), 'anim@heists@ornate_bank@thermal_charge_heels', "thermal_charge", 3.0, -8, -1, 16, 0, 0, 0, 0 )
-			Citizen.Wait(5500)
-			ClearPedTasks(PlayerPedId())
-			DetachEntity(prop)
-            CreateObject(GetHashKey(prop), Config.VaultBomb.x, Config.VaultBomb.y, Config.VaultBomb.z, false, false, false)
+            StartBombAnim(Config)
             QBCore.Functions.Notify('The load will be detonated in 7 seconds.', "error")
             Wait(7000)
-            DeleteEntity(prop)
             AddExplosion(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z, 6, 5.0, true, false, 15.0)
-            TaskPlayAnim(PlayerPedId(), 'anim_heist@hs3f@ig8_vault_explosive_react@right@male@', "player_react_explosive", 3.0, -8, -1, 16, 0, 0, 0, 0 )
+            TaskPlayAnim(PlayerPedId(), 'anim_heist@hs3f@ig8_vault_explosive_react@right@male@', "player_react_explosive_left", 3.0, -8, -1, 32, 0, 0, 0, 0 )
             SpawnCarts()
             OpenVault()
-            Wait(500)
-            AddExplosion(Config.VaultBomb[1].x - 2, Config.VaultBomb[1].y - 2, Config.VaultBomb[1].z, 3, 5.0, true, false, 0.0)
-            Wait(math.random(2000, 4000))
-            AddExplosion(Config.VaultBomb[1].x + 1, Config.VaultBomb[1].y + 1, Config.VaultBomb[1].z, 3, 5.0, true, false, 0.0)
-            --Wait(1000)
-            FreezeEntityPosition(PlayerPedId(), false)
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
@@ -404,25 +395,17 @@ function StartHackAnim(Config) -- bro i fucking give up
 
     NetworkStartSynchronisedScene(netScene2)
     Citizen.Wait(6600)
-    exports['hacking']:OpenHackingGame(function(Success)
-        NetworkStopSynchronisedScene(netScene2)
+    NetworkStopSynchronisedScene(netScene2)
 
-        NetworkStartSynchronisedScene(netScene3)
-        Citizen.Wait(4300)
-        NetworkStopSynchronisedScene(netScene3)
+    NetworkStartSynchronisedScene(netScene3)
+    Citizen.Wait(4300)
+    NetworkStopSynchronisedScene(netScene3)
 
-        DeleteObject(bag)
-        DeleteObject(laptop)
-        DeleteObject(card)
-        FreezeEntityPosition(ped, false)
-        SetPedComponentVariation(ped, 5, 45, 0, 0)
-        if Success then
-            print("Passed!")
-        elseif not Success then
-            print("Failed!")
-            Config.KeycardDoors[closestDoor].isOpen = true
-        end
-    end)
+    DeleteObject(bag)
+    DeleteObject(laptop)
+    DeleteObject(card)
+    FreezeEntityPosition(ped, false)
+    SetPedComponentVariation(ped, 5, 45, 0, 0)
 end
 
 --Cart Grab Anim
@@ -630,7 +613,7 @@ function StartDrillAnim(Config) -- bro i fucking give up
     SetEntityHeading(ped, 63.60)
 
     NetworkStartSynchronisedScene(netScene)
-    Citizen.Wait(3000) -- You can try editing this to make transitions perfect
+    Citizen.Wait(3200) -- You can try editing this to make transitions perfect
     NetworkStopSynchronisedScene(netScene)
 
     NetworkStartSynchronisedScene(netScene2)
@@ -638,7 +621,7 @@ function StartDrillAnim(Config) -- bro i fucking give up
     NetworkStopSynchronisedScene(netScene2)
 
     NetworkStartSynchronisedScene(netScene4)
-    Citizen.Wait(4000)
+    Citizen.Wait(3300)
     NetworkStopSynchronisedScene(netScene4)
 
     NetworkStartSynchronisedScene(netScene3)
@@ -648,6 +631,43 @@ function StartDrillAnim(Config) -- bro i fucking give up
     DeleteObject(bag)
     DeleteObject(drill)
     DeleteObject(card)
+    FreezeEntityPosition(ped, false)
+    SetPedComponentVariation(ped, 5, 45, 0, 0)
+end
+
+function StartBombAnim(Config) -- bro i fucking give up
+    local animDict = "anim@heists@ornate_bank@thermal_charge"
+
+    RequestAnimDict(animDict)
+    RequestModel("prop_c4_final_green")
+    RequestModel("hei_p_m_bag_var22_arm_s")
+
+    while not HasAnimDictLoaded(animDict)
+        or not HasModelLoaded("prop_c4_final_green")
+        or not HasModelLoaded("hei_p_m_bag_var22_arm_s") do
+        Citizen.Wait(100)
+    end
+    local ped = PlayerPedId()
+    local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
+    local animPos = GetAnimInitialOffsetPosition(animDict, "thermal_charge", Config.VaultBomb[1].x + 0.5, Config.VaultBomb[1].y + 0.5, Config.VaultBomb[1].z + 0.20) -- Animasyon kordinatları, buradan lokasyonu değiştirin // These are fixed locations so if you want to change animation location change here
+    --part1
+    FreezeEntityPosition(ped, true)
+    local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.0)
+    NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "thermal_charge", 1.5, -4.0, 1, 16, 1148846080, 0)
+    local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), targetPosition, 1, 1, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "bag_thermal_charge", 4.0, -8.0, 1)
+    local bomb = CreateObject(GetHashKey("prop_c4_final_green"), targetPosition, 1, 1, 0)
+    NetworkAddEntityToSynchronisedScene(bomb, netScene, animDict, "bomb_thermal_charge", 4.0, -8.0, 1)
+
+    SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
+    SetEntityHeading(ped, 63.60)
+
+    NetworkStartSynchronisedScene(netScene)
+    Citizen.Wait(6000) -- You can try editing this to make transitions perfect
+    NetworkStopSynchronisedScene(netScene)
+
+    DeleteObject(bag)
+    DeleteObject(bomb)
     FreezeEntityPosition(ped, false)
     SetPedComponentVariation(ped, 5, 45, 0, 0)
 end
