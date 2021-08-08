@@ -31,7 +31,7 @@ end
 
 CreateThread(function()
     CloseVault()
-    SpawnPeds()
+    --SpawnPeds()
 end)
 
 RegisterCommand("OpenVault", function()
@@ -294,26 +294,8 @@ AddEventHandler('drill:Usedrill', function()
         if result then
             SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true)
             Wait(2000)
-            local DrillObject = CreateObject(GetHashKey("hei_prop_heist_drill"), pos.x, pos.y, pos.z, true, true, true)
-            AttachEntityToEntity(DrillObject, PlayerPedId(), GetPedBoneIndex(PlayerPedId(), 57005), 0.14, 0, -0.01, 90.0, -90.0, 180.0, true, true, false, true, 1, true)
-            QBCore.Functions.Progressbar("drill_lock", "Drilling", math.random(5000, 7000), false, false, {
-                disableMovement = true,
-                disableCarMovement = true,
-                disableMouse = false,
-                disableCombat = true,
-            }, {
-                animDict = "anim_heist@hs3f@ig9_vault_drill@drill@",
-                anim = "drill_straight_fail",
-                flags = 1,
-            }, {}, {}, function() -- Done
-                Config.DrillSpots[closestDrill].hit = true
-                GiveLockerItems()
-                DetachEntity(DrillObject, true, true)
-                DeleteObject(DrillObject)
-                StopAnimTask(PlayerPedId(), "anim_heist@hs3f@ig9_vault_drill@drill@", "drill_straight_fail", 1.0)
-                Wait(500)
-                --TaskPlayAnim(PlayerPedId(), 'anim@heists@fleeca_bank@drilling', "drill_straight_fail", 3.0, -8, -1, 16, 0, 0, 0, 0 )
-            end)
+            StartDrillAnim(Config)
+            Config.DrillSpots[closestDrill].hit = true
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
@@ -333,6 +315,10 @@ AddEventHandler('bomb:Usebomb', function()
 			while not HasAnimDictLoaded('anim@heists@ornate_bank@thermal_charge_heels') do
 				Citizen.Wait(50)
 			end
+            RequestAnimDict('anim_heist@hs3f@ig8_vault_explosive_react@right@male@')
+			while not HasAnimDictLoaded('anim_heist@hs3f@ig8_vault_explosive_react@right@male@') do
+				Citizen.Wait(50)
+			end
             SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true)
             Wait(2000)
             local x,y,z = table.unpack(GetEntityCoords(PlayerPedId()))
@@ -349,6 +335,7 @@ AddEventHandler('bomb:Usebomb', function()
             Wait(7000)
             DeleteEntity(prop)
             AddExplosion(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z, 6, 5.0, true, false, 15.0)
+            TaskPlayAnim(PlayerPedId(), 'anim_heist@hs3f@ig8_vault_explosive_react@right@male@', "player_react_explosive", 3.0, -8, -1, 16, 0, 0, 0, 0 )
             SpawnCarts()
             OpenVault()
             Wait(500)
@@ -596,4 +583,71 @@ function SpawnPeds()
         SetPedRelationshipGroupHash( Yew, GetHashKey("HATES_PLAYER"))
         SetPedDropsWeaponsWhenDead(Yew, false)
     end
+end
+
+function StartDrillAnim(Config) -- bro i fucking give up
+    local animDict = "anim_heist@hs3f@ig10_lockbox_drill@pattern_01@lockbox_02@male@"
+
+    RequestAnimDict(animDict)
+    RequestModel("ch_prop_vault_drill_01a")
+    RequestModel("hei_p_m_bag_var22_arm_s")
+
+    while not HasAnimDictLoaded(animDict)
+        or not HasModelLoaded("ch_prop_vault_drill_01a")
+        or not HasModelLoaded("hei_p_m_bag_var22_arm_s") do
+        Citizen.Wait(100)
+    end
+    local ped = PlayerPedId()
+    local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
+    local animPos = GetAnimInitialOffsetPosition(animDict, "enter", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2) -- Animasyon kordinatları, buradan lokasyonu değiştirin // These are fixed locations so if you want to change animation location change here
+    local animPos2 = GetAnimInitialOffsetPosition(animDict, "idle", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
+    local animPos3 = GetAnimInitialOffsetPosition(animDict, "exit", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
+    -- ENTER
+    FreezeEntityPosition(ped, true)
+    local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.0)
+    NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "enter", 1.5, -4.0, 1, 16, 1148846080, 0)
+    local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), targetPosition, 1, 1, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "enter_p_m_bag_var22_arm_s", 4.0, -8.0, 1)
+    local drill = CreateObject(GetHashKey("ch_prop_vault_drill_01a"), targetPosition, 1, 1, 0)
+    NetworkAddEntityToSynchronisedScene(drill, netScene, animDict, "enter_ch_prop_vault_drill_01a", 4.0, -8.0, 1)
+    -- LOCKER 1
+    local netScene2 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
+    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "action", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "action_p_m_bag_var22_arm_s", 4.0, -80.0, 1)
+    NetworkAddEntityToSynchronisedScene(drill, netScene2, animDict, "action_ch_prop_vault_drill_01a", 4.0, -80.0, 1)
+    -- Reward 1
+    local netScene4 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
+    NetworkAddPedToSynchronisedScene(ped, netScene4, animDict, "reward", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene4, animDict, "reward_p_m_bag_var22_arm_s", 4.0, -80.0, 1)
+    NetworkAddEntityToSynchronisedScene(drill, netScene4, animDict, "reward_ch_prop_vault_drill_01a", 4.0, -80.0, 1)
+    -- EXIT
+    local netScene3 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
+    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "exit_p_m_bag_var22_arm_s", 4.0, -8.0, 1)
+    NetworkAddEntityToSynchronisedScene(drill, netScene3, animDict, "exit_ch_prop_vault_drill_01a", 4.0, -8.0, 1)
+
+    SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
+    SetEntityHeading(ped, 63.60)
+
+    NetworkStartSynchronisedScene(netScene)
+    Citizen.Wait(3000) -- You can try editing this to make transitions perfect
+    NetworkStopSynchronisedScene(netScene)
+
+    NetworkStartSynchronisedScene(netScene2)
+    Citizen.Wait(6000)
+    NetworkStopSynchronisedScene(netScene2)
+
+    NetworkStartSynchronisedScene(netScene4)
+    Citizen.Wait(4000)
+    NetworkStopSynchronisedScene(netScene4)
+
+    NetworkStartSynchronisedScene(netScene3)
+    Citizen.Wait(3000)
+    NetworkStopSynchronisedScene(netScene3)
+
+    DeleteObject(bag)
+    DeleteObject(drill)
+    DeleteObject(card)
+    FreezeEntityPosition(ped, false)
+    SetPedComponentVariation(ped, 5, 45, 0, 0)
 end
