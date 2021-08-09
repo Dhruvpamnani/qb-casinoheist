@@ -48,6 +48,16 @@ Config.Trolleys = {
     }
 }
 
+Config.GoldTrolleys = {
+    [1] = {
+        x = 979.45,
+        y = 33.59,
+        z = 58.83,
+        h = 186.72,
+        hit = false
+    }
+}
+
 Config.KeycardDoors = {
     [1] = {
         x = 920.62,
