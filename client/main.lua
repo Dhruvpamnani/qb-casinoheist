@@ -46,9 +46,23 @@ function SpawnGoldCarts()
     end
 end
 
+function SpawnVaultDoor()
+    local ped = PlayerPedId()
+    local pos = GetEntityCoords(ped)
+    local model = "ch_des_heist3_vault_end"
+    RequestModel(model)
+    while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
+    --ClearAreaOfObjects(989.14, 50.54, 59.65, 10, 0)
+    local BrokenDoor = CreateObject(model, Config.VaultDoors[1].x + 0.2, Config.VaultDoors[1].y + 0.66, Config.VaultDoors[1].z - 1.6, true, true, false)
+    Wait(100)
+    SetEntityHeading(BrokenDoor, 325.00)
+    Wait(1000)
+    print(GetEntityHeading(BrokenDoor))
+end
+
 CreateThread(function()
     CloseVault()
-    SpawnPeds()
+    --SpawnPeds()
 end)
 
 RegisterCommand("OpenVault", function()
@@ -71,6 +85,8 @@ end
 function CloseVault()
     local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
     FreezeEntityPosition(door, true)
+    SetEntityVisible(door, true)
+    SetEntityCollision(door, true, true)
     for i = 190, 302, 1 do
         i = i + 0.0
         SetEntityHeading(door, -i)
@@ -170,15 +186,14 @@ CreateThread(function()
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
         local dist = #(pos - vector3(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z))
-        if dist < 1 then
+        if dist < 1 and Config.VaultBomb[1].hit == false then
             inRange = true
             DrawText3Ds(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z + 1, '[~b~E~s~] Hit')
             if IsControlJustPressed(0, 38) then
                 Wait(500)
+                Config.VaultBomb[1].hit = true
                 TriggerEvent('bomb:Usebomb')
             end
-        elseif dist < 1 then
-            DrawText3Ds(Config.DrillSpots[1].x, Config.DrillSpots[1].y, Config.DrillSpots[1].z + 1, '~r~ Empty')
         end
     end
 end)
@@ -367,22 +382,14 @@ RegisterNetEvent('bomb:Usebomb')
 AddEventHandler('bomb:Usebomb', function()
     local ped = PlayerPedId()
     local pos = GetEntityCoords(ped)
-    local dict = "anim_heist@hs3f@ig8_vault_explosive_react@right@male@"
     if math.random(1, 100) <= 65 and not IsWearingHandshoes() then
         TriggerServerEvent("evidence:server:CreateFingerDrop", pos)
     end
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
+            SetEntityHeading(ped, 326.34)
             StartBombAnim(Config)
             currentSafe = 1
-            QBCore.Functions.Notify('The load will be detonated in 7 seconds.', "error")
-            Wait(7000)
-            AddExplosion(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z, 6, 5.0, true, false, 15.0)
-            loadAnimDict(dict)
-            TaskPlayAnim(ped, dict, "player_react_explosive_left", 3.0, -8, -1, 16, 0, 0, 0, 0 )
-            SpawnCarts()
-            SpawnGoldCarts() -- thtowing errors
-            OpenVault()
             local s1, s2 = Citizen.InvokeNative(0x2EB41072B4C1E4C0, pos.x, pos.y, pos.z, Citizen.PointerValueInt(), Citizen.PointerValueInt())
             local street1 = GetStreetNameFromHashKey(s1)
             local street2 = GetStreetNameFromHashKey(s2)
@@ -610,13 +617,13 @@ function SpawnPeds()
         SetPedHelmet(Yew, true)
         SetPedPropIndex(Yew, 0, 88, 0, true)
         SetPedArmour(Yew, 100)
-        SetPedShootRate(Yew, 500)
+        SetPedShootRate(Yew, 300)
         SetPedCombatAttributes(Yew, 46, true)
         SetPedCombatAttributes(Yew, 0, true)
         SetPedFleeAttributes(Yew, 0, 0)
         SetPedAsEnemy(Yew,true)
         SetPedMaxHealth(Yew, 200)
-        SetPedAlertness(Yew, 3)
+        SetPedAlertness(Yew, 1)
         SetPedCombatRange(Yew, 0)
         SetPedCombatMovement(Yew, 1)
         TaskCombatPed(Yew, PlayerPedId(), 0,16)
@@ -761,7 +768,8 @@ function StartDrillAnim2(Config)
 end
 
 function StartBombAnim(Config) -- bomb no work kek
-    local animDict = "anim@heists@ornate_bank@thermal_charge"
+    local animDict = "anim_heist@hs3f@ig8_vault_explosives@right@male@"
+    local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
 
     RequestAnimDict(animDict)
     RequestModel("ch_prop_ch_explosive_01a")
@@ -774,30 +782,85 @@ function StartBombAnim(Config) -- bomb no work kek
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
-    local animPos = GetAnimInitialOffsetPosition(animDict, "thermal_charge", Config.VaultBomb[1].x + 0.5, Config.VaultBomb[1].y + 0.5, Config.VaultBomb[1].z + 0.20) -- Animasyon kordinatları, buradan lokasyonu değiştirin // These are fixed locations so if you want to change animation location change here
-    print(targetPosition)
+    local animPos2 = GetAnimInitialOffsetPosition(animDict, "player_ig8_vault_explosive_enter", Config.VaultBomb[1].x + 0.3, Config.VaultBomb[1].y + 0, Config.VaultBomb[1].z + 1.1)
+    local animPos3 = GetAnimInitialOffsetPosition(animDict, "player_ig8_vault_explosive_plant_a", Config.VaultBomb[1].x + 0.3, Config.VaultBomb[1].y + 0, Config.VaultBomb[1].z + 1.1)
+    local animPos4 = GetAnimInitialOffsetPosition(animDict, "player_ig8_vault_explosive_plant_b", Config.VaultBomb[1].x + 0.3, Config.VaultBomb[1].y + 0, Config.VaultBomb[1].z + 1.1)
+    local animPos5 = GetAnimInitialOffsetPosition(animDict, "player_ig8_vault_explosive_plant_c", Config.VaultBomb[1].x + 0.3, Config.VaultBomb[1].y + 0, Config.VaultBomb[1].z + 1.1)
+
+    -- part1
     FreezeEntityPosition(ped, true)
-
-    local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "thermal_charge", 1.5, -4.0, 1, 16, 1148846080, 0)
-
+    local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 0.9)
     local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), targetPosition, 1, 1, 0)
-    NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "bag_thermal_charge", 4.0, -8.0, 1)
-
     local bomb = CreateObject(GetHashKey("ch_prop_ch_explosive_01a"), targetPosition, 1, 1, 0)
-    NetworkAddEntityToSynchronisedScene(bomb, netScene, animDict, "bomb_thermal_charge", 4.0, -8.0, 1)
+    local bomb2 = CreateObject(GetHashKey("ch_prop_ch_explosive_01a"), targetPosition, 1, 1, 0)
+    local bomb3 = CreateObject(GetHashKey("ch_prop_ch_explosive_01a"), targetPosition, 1, 1, 0)
+    local bomb4 = CreateObject(GetHashKey("ch_prop_ch_explosive_01a"), targetPosition, 1, 1, 0)
+
+    SetEntityVisible(bomb2, false)
+    SetEntityVisible(bomb3, false)
+    SetEntityVisible(bomb4, false)
+    -- part2
+    local netScene2 = NetworkCreateSynchronisedScene(animPos2, targetRotation, 2, false, true, 1065353216, 0, 0.9)
+    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "player_ig8_vault_explosive_enter", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "bag_ig8_vault_explosive_enter", 4.0, -80.0, 1)
+    NetworkAddEntityToSynchronisedScene(bomb, netScene2, animDict, "semtex_a_ig8_vault_explosive_enter", 4.0, -80.0, 1)
+
+    local netScene3 = NetworkCreateSynchronisedScene(animPos3, targetRotation, 2, false, true, 1065353216, 0, 0.9)
+    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "player_ig8_vault_explosive_plant_a", 1.5, -4.0, 10, 1, 1148846080, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "bag_ig8_vault_explosive_plant_a", 4.0, -80.0, 1)
+    NetworkAddEntityToSynchronisedScene(bomb2, netScene3, animDict, "semtex_a_ig8_vault_explosive_plant_a", 4.0, -80.0, 1)
+
+    local netScene4 = NetworkCreateSynchronisedScene(animPos4, targetRotation, 2, false, true, 1065353216, 0, 0.9)
+    NetworkAddPedToSynchronisedScene(ped, netScene4, animDict, "player_ig8_vault_explosive_plant_b", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene4, animDict, "bag_ig8_vault_explosive_plant_b", 4.0, -80.0, 1)
+    NetworkAddEntityToSynchronisedScene(bomb3, netScene4, animDict, "semtex_b_ig8_vault_explosive_plant_b", 4.0, -80.0, 1)
+
+    local netScene5 = NetworkCreateSynchronisedScene(animPos5, targetRotation, 2, false, true, 1065353216, 0, 0.9)
+    NetworkAddPedToSynchronisedScene(ped, netScene5, animDict, "player_ig8_vault_explosive_plant_c", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddEntityToSynchronisedScene(bag, netScene5, animDict, "bag_ig8_vault_explosive_plant_c", 4.0, -80.0, 1)
+    NetworkAddEntityToSynchronisedScene(bomb4, netScene5, animDict, "semtex_c_ig8_vault_explosive_plant_c", 4.0, -80.0, 1)
 
     SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
-    SetEntityHeading(ped, 63.60)
 
-    NetworkStartSynchronisedScene(netScene)
-    Citizen.Wait(6000) -- You can try editing this to make transitions perfect
-    NetworkStopSynchronisedScene(netScene)
+    NetworkStartSynchronisedScene(netScene2)
+    Citizen.Wait(1400)
+    DeleteObject(bomb)
+    SetEntityVisible(bomb2, true)
+    NetworkStopSynchronisedScene(netScene2)
+
+    NetworkStartSynchronisedScene(netScene3)
+    Citizen.Wait(2200)
+    SetEntityVisible(bomb3, true)
+    NetworkStopSynchronisedScene(netScene3)
+
+    NetworkStartSynchronisedScene(netScene4)
+    Citizen.Wait(2200)
+    SetEntityVisible(bomb4, true)
+    NetworkStopSynchronisedScene(netScene4)
+
+    NetworkStartSynchronisedScene(netScene5)
+    Citizen.Wait(2200)
+    NetworkStopSynchronisedScene(netScene5)
 
     DeleteObject(bag)
-    --DeleteObject(bomb)
     FreezeEntityPosition(ped, false)
     SetPedComponentVariation(ped, 5, 45, 0, 0)
+
+    QBCore.Functions.Notify('The bomb will go off in 7 seconds.', "error")
+    Wait(7000)
+    AddExplosion(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z, 82, 5.0, true, false, 15.0)
+    SetEntityVisible(door, false)
+    DeleteObject(bomb)
+    DeleteObject(bomb2)
+    DeleteObject(bomb3)
+    DeleteObject(bomb4)
+    loadAnimDict("anim_heist@hs3f@ig8_vault_explosive_react@right@male@")
+    TaskPlayAnim(ped, "anim_heist@hs3f@ig8_vault_explosive_react@right@male@", "player_react_explosive_left", 3.0, -8, -1, 16, 0, 0, 0, 0 )
+    --SpawnCarts()
+    --SpawnGoldCarts() -- thtowing errors
+    SpawnVaultDoor()
+    OpenVault()
+    SetEntityCollision(door, false, true)
 end
 
 function StartGrabgold()

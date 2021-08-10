@@ -17,10 +17,11 @@ Config.VaultDoors = {
 
 Config.VaultBomb = {
     [1] = {
-        x = 976.29,
-        y = 60.75,
+        x = 976.42,
+        y = 59.41,
         z = 59.83,
         h = 239.36,
+        hit = false
     },
 }
 
