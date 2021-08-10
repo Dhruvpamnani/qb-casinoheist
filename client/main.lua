@@ -1,6 +1,7 @@
 Config = Config or {}
 local inRange = false
 local isLoggedIn = false
+local HeistStarted = false
 
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
@@ -47,8 +48,6 @@ function SpawnGoldCarts()
 end
 
 function SpawnVaultDoor()
-    local ped = PlayerPedId()
-    local pos = GetEntityCoords(ped)
     local model = "ch_des_heist3_vault_end"
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
@@ -208,6 +207,7 @@ CreateThread(function()
             if dist < 1 and not Config.DrillSpots[i].hit then
                 inRange = true
                 DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
+                print(closestDrill)
                 if IsControlJustPressed(0, 38) then
                     Wait(500) -- Needed or closestDrill = nil aka big error
                     TriggerEvent('drill:Usedrill')
@@ -224,7 +224,7 @@ CreateThread(function()
         Wait(0)
         local ped = PlayerPedId()
         local pos = GetEntityCoords(ped)
-        for i = 1, 4 do  --Note: see if we can remove all the for loops and replace with the [closestDoor] see line 278 for what im talking about
+        for i = 1, 3 do  --Note: see if we can remove all the for loops and replace with the [closestKeypad] see line 278 for what im talking about
             local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
             if dist < 1 and not Config.KeycardDoors[i].isOpen then
                 DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '[~b~E~s~] Hack')
@@ -276,14 +276,14 @@ Citizen.CreateThread(function()
 
             for k, v in pairs(Config.DrillSpots) do
                 dist = #(pos - vector3(Config.DrillSpots[k]["x"], Config.DrillSpots[k]["y"], Config.DrillSpots[k]["z"]))
-                if dist < 1 and Config.DrillSpots[k].hit == false then
+                if dist < 1.5 and Config.DrillSpots[k].hit == false then
                     closestDrill = k
                     inRange = true
                 end
             end
 
             if not inRange then
-                Citizen.Wait(1000)
+                Citizen.Wait(1500)
                 closestDrill = nil
             end
         end
@@ -304,14 +304,14 @@ Citizen.CreateThread(function()
             for k, v in pairs(Config.KeycardDoors) do
                 dist = #(pos - vector3(Config.KeycardDoors[k]["x"], Config.KeycardDoors[k]["y"], Config.KeycardDoors[k]["z"]))
                 if dist < 2 then
-                    closestDoor = k
+                    closestKeypad = k
                     inRange = true
                 end
             end
 
             if not inRange then
                 Citizen.Wait(2000)
-                closestDoor = nil
+                closestKeypad = nil
             end
         end
 
@@ -349,8 +349,11 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
             Wait(2000)
             TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["security_card_02"], "remove")
             --TriggerServerEvent("QBCore:Server:RemoveItem", "security_card_02", 1)
-            SetEntityHeading(ped, Config.KeycardDoors[closestDoor].h)
+            SetEntityHeading(ped, Config.KeycardDoors[closestKeypad].h)
             StartHackAnim(Config)
+            print(Config.KeycardDoors[closestKeypad].id)
+            Config.KeycardDoors[closestKeypad].isOpen = true
+            TriggerServerEvent('nui_doorlock:server:updateState', Config.KeycardDoors[closestKeypad].id, false, false, false, true)
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
@@ -418,34 +421,34 @@ function StartHackAnim(Config)
 
     RequestAnimDict(animDict)
     RequestModel("hei_prop_hst_laptop")
-    RequestModel("hei_p_m_bag_var22_arm_s")
+    RequestModel("ch_p_m_bag_var03_arm_s")
 
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("hei_prop_hst_laptop")
-        or not HasModelLoaded("hei_p_m_bag_var22_arm_s") do
+        or not HasModelLoaded("ch_p_m_bag_var03_arm_s") do
         Citizen.Wait(100)
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
-    local animPos = GetAnimInitialOffsetPosition(animDict, "hack_enter", Config.KeycardDoors[closestDoor].animationx + 0, Config.KeycardDoors[closestDoor].animationy + 0, Config.KeycardDoors[closestDoor].animationz + 0.85) -- Animasyon kordinatları, buradan lokasyonu değiştirin // These are fixed locations so if you want to change animation location change here
-    local animPos2 = GetAnimInitialOffsetPosition(animDict, "hack_loop", Config.KeycardDoors[closestDoor].animationx + 0, Config.KeycardDoors[closestDoor].animationy + 0, Config.KeycardDoors[closestDoor].animationz + 0.85)
-    local animPos3 = GetAnimInitialOffsetPosition(animDict, "hack_exit", Config.KeycardDoors[closestDoor].animationx + 0, Config.KeycardDoors[closestDoor].animationy + 0, Config.KeycardDoors[closestDoor].animationz + 0.85)
+    local animPos = GetAnimInitialOffsetPosition(animDict, "hack_enter", Config.KeycardDoors[closestKeypad].animationx + 0, Config.KeycardDoors[closestKeypad].animationy + 0, Config.KeycardDoors[closestKeypad].animationz + 0.85) -- Animasyon kordinatları, buradan lokasyonu değiştirin // These are fixed locations so if you want to change animation location change here
+    local animPos2 = GetAnimInitialOffsetPosition(animDict, "hack_loop", Config.KeycardDoors[closestKeypad].animationx + 0, Config.KeycardDoors[closestKeypad].animationy + 0, Config.KeycardDoors[closestKeypad].animationz + 0.85)
+    local animPos3 = GetAnimInitialOffsetPosition(animDict, "hack_exit", Config.KeycardDoors[closestKeypad].animationx + 0, Config.KeycardDoors[closestKeypad].animationy + 0, Config.KeycardDoors[closestKeypad].animationz + 0.85)
     -- part1
     FreezeEntityPosition(ped, true)
     local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.3)
-    NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "hack_enter", 1.5, -4.0, 1, 16, 1148846080, 0)
-    local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), targetPosition, 1, 1, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "hack_enter", 0, 0, 1, 16, 1148846080, 0)
+    local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "hack_enter_bag", 4.0, -8.0, 1)
     local laptop = CreateObject(GetHashKey("hei_prop_hst_laptop"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(laptop, netScene, animDict, "hack_enter_laptop", 4.0, -8.0, 1)
     -- part2
     local netScene2 = NetworkCreateSynchronisedScene(animPos2, targetRotation, 2, false, true, 1065353216, 0, 1.3)
-    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "hack_loop", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "hack_loop", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "hack_loop_bag", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(laptop, netScene2, animDict, "hack_loop_laptop", 4.0, -80.0, 1)
     -- part3
     local netScene3 = NetworkCreateSynchronisedScene(animPos3, targetRotation, 2, false, true, 1065353216, 0, 1.3)
-    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "hack_exit", 1.5, -4.0, 1, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "hack_exit", 0, 0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "hack_exit_bag", 4.0, -8.0, 1)
     NetworkAddEntityToSynchronisedScene(laptop, netScene3, animDict, "hack_exit_laptop", 4.0, -8.0, 1)
 
@@ -453,7 +456,7 @@ function StartHackAnim(Config)
     SetEntityHeading(ped, 63.60)
 
     NetworkStartSynchronisedScene(netScene)
-    Citizen.Wait(5000) -- You can try editing this to make transitions perfect
+    Citizen.Wait(6000) -- You can try editing this to make transitions perfect
     NetworkStopSynchronisedScene(netScene)
 
     NetworkStartSynchronisedScene(netScene2)
@@ -468,7 +471,7 @@ function StartHackAnim(Config)
     DeleteObject(laptop)
     DeleteObject(card)
     FreezeEntityPosition(ped, false)
-    SetPedComponentVariation(ped, 5, 45, 0, 0)
+    SetPedComponentVariation(ped, 5, 82, 3, 0)
 end
 
 --Cart Grab Anim
@@ -520,7 +523,7 @@ function StartGrab()
 	if IsEntityPlayingAnim(trollyobj, "anim@heists@ornate_bank@grab_cash", "cart_cash_dissapear", 3) then
 		return
     end
-    local baghash = GetHashKey("hei_p_m_bag_var22_arm_s")
+    local baghash = GetHashKey("ch_p_m_bag_var03_arm_s")
 
     RequestAnimDict("anim@heists@ornate_bank@grab_cash")
     RequestModel(baghash)
@@ -532,7 +535,7 @@ function StartGrab()
 		Citizen.Wait(1)
 		NetworkRequestControlOfEntity(trollyobj)
 	end
-	local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), GetEntityCoords(PlayerPedId()), true, false, false)
+	local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), GetEntityCoords(PlayerPedId()), true, false, false)
     local scene1 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
 	NetworkAddPedToSynchronisedScene(ped, scene1, "anim@heists@ornate_bank@grab_cash", "intro", 1.5, -4.0, 1, 16, 1148846080, 0)
@@ -566,10 +569,10 @@ function StartGrab()
     GiveCartItems()
 	Citizen.Wait(1800)
 	DeleteObject(bag)
-    SetPedComponentVariation(ped, 5, 45, 0, 0)
+    SetPedComponentVariation(ped, 5, 82, 3, 0)
 	RemoveAnimDict("anim@heists@ornate_bank@grab_cash")
 	SetModelAsNoLongerNeeded(emptyobj)
-    SetModelAsNoLongerNeeded(GetHashKey("hei_p_m_bag_var22_arm_s"))
+    SetModelAsNoLongerNeeded(GetHashKey("ch_p_m_bag_var03_arm_s"))
     disableinput = false
 end
 
@@ -638,11 +641,11 @@ function StartDrillAnim(Config)
 
     RequestAnimDict(animDict)
     RequestModel("ch_prop_vault_drill_01a")
-    RequestModel("hei_p_m_bag_var22_arm_s")
+    RequestModel("ch_p_m_bag_var03_arm_s")
 
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("ch_prop_vault_drill_01a")
-        or not HasModelLoaded("hei_p_m_bag_var22_arm_s") do
+        or not HasModelLoaded("ch_p_m_bag_var03_arm_s") do
         Citizen.Wait(100)
     end
     local ped = PlayerPedId()
@@ -654,25 +657,20 @@ function StartDrillAnim(Config)
     FreezeEntityPosition(ped, true)
     local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.0)
     NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "enter", 1.5, -4.0, 1, 16, 1148846080, 0)
-    local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), targetPosition, 1, 1, 0)
+    local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "enter_p_m_bag_var22_arm_s", 4.0, -8.0, 1)
     local drill = CreateObject(GetHashKey("ch_prop_vault_drill_01a"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(drill, netScene, animDict, "enter_ch_prop_vault_drill_01a", 4.0, -8.0, 1)
     -- LOCKER 1
     local netScene2 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "action", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "action", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "action_p_m_bag_var22_arm_s", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(drill, netScene2, animDict, "action_ch_prop_vault_drill_01a", 4.0, -80.0, 1)
     -- Reward 1
     local netScene4 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene4, animDict, "reward", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene4, animDict, "reward", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene4, animDict, "reward_p_m_bag_var22_arm_s", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(drill, netScene4, animDict, "reward_ch_prop_vault_drill_01a", 4.0, -80.0, 1)
-    -- EXIT
-    local netScene3 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
-    NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "exit_p_m_bag_var22_arm_s", 4.0, -8.0, 1)
-    NetworkAddEntityToSynchronisedScene(drill, netScene3, animDict, "exit_ch_prop_vault_drill_01a", 4.0, -8.0, 1)
 
     SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
     SetEntityHeading(ped, 63.60)
@@ -689,15 +687,11 @@ function StartDrillAnim(Config)
     Citizen.Wait(4300)
     NetworkStopSynchronisedScene(netScene4)
 
-    --NetworkStartSynchronisedScene(netScene3)
-    --Citizen.Wait(3000)
-    --NetworkStopSynchronisedScene(netScene3)
-
     DeleteObject(bag)
     DeleteObject(drill)
     DeleteObject(card)
     FreezeEntityPosition(ped, false)
-    SetPedComponentVariation(ped, 5, 45, 0, 0)
+    SetPedComponentVariation(ped, 5, 82, 3, 0)
 end
 
 function StartDrillAnim2(Config)
@@ -705,11 +699,11 @@ function StartDrillAnim2(Config)
 
     RequestAnimDict(animDict)
     RequestModel("ch_prop_vault_drill_01a")
-    RequestModel("hei_p_m_bag_var22_arm_s")
+    RequestModel("ch_p_m_bag_var03_arm_s")
 
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("ch_prop_vault_drill_01a")
-        or not HasModelLoaded("hei_p_m_bag_var22_arm_s") do
+        or not HasModelLoaded("ch_p_m_bag_var03_arm_s") do
         Citizen.Wait(100)
     end
     local ped = PlayerPedId()
@@ -720,24 +714,24 @@ function StartDrillAnim2(Config)
     -- ENTER
     FreezeEntityPosition(ped, true)
     local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "enter", 1.5, -4.0, 1, 16, 1148846080, 0)
-    local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), targetPosition, 1, 1, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "enter", 0, 0, 1, 16, 1148846080, 0)
+    local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "enter_p_m_bag_var22_arm_s", 4.0, -8.0, 1)
     local drill = CreateObject(GetHashKey("ch_prop_vault_drill_01a"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(drill, netScene, animDict, "enter_ch_prop_vault_drill_01a", 4.0, -8.0, 1)
     -- LOCKER 1
     local netScene2 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "action", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "action", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "action_p_m_bag_var22_arm_s", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(drill, netScene2, animDict, "action_ch_prop_vault_drill_01a", 4.0, -80.0, 1)
     -- Reward 1
     local netScene4 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene4, animDict, "reward", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene4, animDict, "reward", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene4, animDict, "reward_p_m_bag_var22_arm_s", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(drill, netScene4, animDict, "reward_ch_prop_vault_drill_01a", 4.0, -80.0, 1)
     -- EXIT
     local netScene3 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "exit", 0, 0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "exit_p_m_bag_var22_arm_s", 4.0, -8.0, 1)
     NetworkAddEntityToSynchronisedScene(drill, netScene3, animDict, "exit_ch_prop_vault_drill_01a", 4.0, -8.0, 1)
 
@@ -756,15 +750,15 @@ function StartDrillAnim2(Config)
     Citizen.Wait(3300)
     NetworkStopSynchronisedScene(netScene4)
 
-    --NetworkStartSynchronisedScene(netScene3)
-    --Citizen.Wait(3000)
-    --NetworkStopSynchronisedScene(netScene3)
+    NetworkStartSynchronisedScene(netScene3)
+    Citizen.Wait(3000)
+    NetworkStopSynchronisedScene(netScene3)
 
     DeleteObject(bag)
     DeleteObject(drill)
     DeleteObject(card)
     FreezeEntityPosition(ped, false)
-    SetPedComponentVariation(ped, 5, 45, 0, 0)
+    SetPedComponentVariation(ped, 5, 82, 3, 0)
 end
 
 function StartBombAnim(Config) -- bomb no work kek
@@ -773,11 +767,11 @@ function StartBombAnim(Config) -- bomb no work kek
 
     RequestAnimDict(animDict)
     RequestModel("ch_prop_ch_explosive_01a")
-    RequestModel("hei_p_m_bag_var22_arm_s")
+    RequestModel("ch_p_m_bag_var03_arm_s")
 
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("ch_prop_ch_explosive_01a")
-        or not HasModelLoaded("hei_p_m_bag_var22_arm_s") do
+        or not HasModelLoaded("ch_p_m_bag_var03_arm_s") do
         Citizen.Wait(100)
     end
     local ped = PlayerPedId()
@@ -790,7 +784,7 @@ function StartBombAnim(Config) -- bomb no work kek
     -- part1
     FreezeEntityPosition(ped, true)
     local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 0.9)
-    local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), targetPosition, 1, 1, 0)
+    local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), targetPosition, 1, 1, 0)
     local bomb = CreateObject(GetHashKey("ch_prop_ch_explosive_01a"), targetPosition, 1, 1, 0)
     local bomb2 = CreateObject(GetHashKey("ch_prop_ch_explosive_01a"), targetPosition, 1, 1, 0)
     local bomb3 = CreateObject(GetHashKey("ch_prop_ch_explosive_01a"), targetPosition, 1, 1, 0)
@@ -801,50 +795,50 @@ function StartBombAnim(Config) -- bomb no work kek
     SetEntityVisible(bomb4, false)
     -- part2
     local netScene2 = NetworkCreateSynchronisedScene(animPos2, targetRotation, 2, false, true, 1065353216, 0, 0.9)
-    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "player_ig8_vault_explosive_enter", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "player_ig8_vault_explosive_enter", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "bag_ig8_vault_explosive_enter", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(bomb, netScene2, animDict, "semtex_a_ig8_vault_explosive_enter", 4.0, -80.0, 1)
 
     local netScene3 = NetworkCreateSynchronisedScene(animPos3, targetRotation, 2, false, true, 1065353216, 0, 0.9)
-    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "player_ig8_vault_explosive_plant_a", 1.5, -4.0, 10, 1, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "player_ig8_vault_explosive_plant_a", 0, 0, 10, 1, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "bag_ig8_vault_explosive_plant_a", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(bomb2, netScene3, animDict, "semtex_a_ig8_vault_explosive_plant_a", 4.0, -80.0, 1)
 
     local netScene4 = NetworkCreateSynchronisedScene(animPos4, targetRotation, 2, false, true, 1065353216, 0, 0.9)
-    NetworkAddPedToSynchronisedScene(ped, netScene4, animDict, "player_ig8_vault_explosive_plant_b", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene4, animDict, "player_ig8_vault_explosive_plant_b", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene4, animDict, "bag_ig8_vault_explosive_plant_b", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(bomb3, netScene4, animDict, "semtex_b_ig8_vault_explosive_plant_b", 4.0, -80.0, 1)
 
     local netScene5 = NetworkCreateSynchronisedScene(animPos5, targetRotation, 2, false, true, 1065353216, 0, 0.9)
-    NetworkAddPedToSynchronisedScene(ped, netScene5, animDict, "player_ig8_vault_explosive_plant_c", 1.5, -4.0, 10, 16, 1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, netScene5, animDict, "player_ig8_vault_explosive_plant_c", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene5, animDict, "bag_ig8_vault_explosive_plant_c", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(bomb4, netScene5, animDict, "semtex_c_ig8_vault_explosive_plant_c", 4.0, -80.0, 1)
 
     SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
 
     NetworkStartSynchronisedScene(netScene2)
-    Citizen.Wait(1400)
+    Citizen.Wait(1200)
     DeleteObject(bomb)
     SetEntityVisible(bomb2, true)
     NetworkStopSynchronisedScene(netScene2)
 
     NetworkStartSynchronisedScene(netScene3)
-    Citizen.Wait(2200)
+    Citizen.Wait(2800)
     SetEntityVisible(bomb3, true)
     NetworkStopSynchronisedScene(netScene3)
 
     NetworkStartSynchronisedScene(netScene4)
-    Citizen.Wait(2200)
+    Citizen.Wait(2800)
     SetEntityVisible(bomb4, true)
     NetworkStopSynchronisedScene(netScene4)
 
     NetworkStartSynchronisedScene(netScene5)
-    Citizen.Wait(2200)
+    Citizen.Wait(2800)
     NetworkStopSynchronisedScene(netScene5)
 
     DeleteObject(bag)
     FreezeEntityPosition(ped, false)
-    SetPedComponentVariation(ped, 5, 45, 0, 0)
+    SetPedComponentVariation(ped, 5, 82, 3, 0)
 
     QBCore.Functions.Notify('The bomb will go off in 7 seconds.', "error")
     Wait(7000)
@@ -856,8 +850,8 @@ function StartBombAnim(Config) -- bomb no work kek
     DeleteObject(bomb4)
     loadAnimDict("anim_heist@hs3f@ig8_vault_explosive_react@right@male@")
     TaskPlayAnim(ped, "anim_heist@hs3f@ig8_vault_explosive_react@right@male@", "player_react_explosive_left", 3.0, -8, -1, 16, 0, 0, 0, 0 )
-    --SpawnCarts()
-    --SpawnGoldCarts() -- thtowing errors
+    SpawnCarts()
+    SpawnGoldCarts() -- thtowing errors
     SpawnVaultDoor()
     OpenVault()
     SetEntityCollision(door, false, true)
@@ -900,7 +894,6 @@ function StartGrabgold()
                 if HasAnimEventFired(ped, GetHashKey("RELEASE_CASH_DESTROY")) then
                     if IsEntityVisible(grabobj) then
                         SetEntityVisible(grabobj, false, false)
-                        TriggerServerEvent('get:thinglollmao')
                     end
                 end
             end
@@ -913,7 +906,7 @@ function StartGrabgold()
     if IsEntityPlayingAnim(trollyobj, "anim@heists@ornate_bank@grab_cash", "cart_cash_dissapear", 3) then
         return
     end
-    local baghash = GetHashKey("hei_p_m_bag_var22_arm_s")
+    local baghash = GetHashKey("ch_p_m_bag_var03_arm_s")
 
     RequestAnimDict("anim@heists@ornate_bank@grab_cash")
     RequestModel(baghash)
@@ -926,7 +919,7 @@ function StartGrabgold()
         Citizen.Wait(1)
         NetworkRequestControlOfEntity(trollyobj)
     end
-    local bag = CreateObject(GetHashKey("hei_p_m_bag_var22_arm_s"), GetEntityCoords(PlayerPedId()), true, false, false)
+    local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), GetEntityCoords(PlayerPedId()), true, false, false)
     local scene1 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false,
                        false, 1065353216, 0, 1.3)
 
@@ -964,9 +957,9 @@ function StartGrabgold()
     PlaceObjectOnGroundProperly(NewTrolley)
     Citizen.Wait(1800)
     DeleteObject(bag)
-    SetPedComponentVariation(ped, 5, 45, 0, 0)
+    SetPedComponentVariation(ped, 5, 82, 3, 0)
     RemoveAnimDict("anim@heists@ornate_bank@grab_cash")
     SetModelAsNoLongerNeeded(emptyobj)
-    SetModelAsNoLongerNeeded(GetHashKey("hei_p_m_bag_var22_arm_s"))
+    SetModelAsNoLongerNeeded(GetHashKey("ch_p_m_bag_var03_arm_s"))
     disableinput = false
 end
