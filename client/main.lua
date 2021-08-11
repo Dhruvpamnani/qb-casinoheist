@@ -71,14 +71,27 @@ RegisterCommand("CloseVault", function()
     CloseVault()
 end)
 
+
+UseParticleFxAssetNextCall(particleAsset)
+StartParticleFxNonLoopedAtCoord(particleName, x, y, z, 0.0, 0.0, 0.0, 5.0, false, false, false, false)
+
 function OpenVault()
+    local ped = PlayerPedId()
     local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
-    FreezeEntityPosition(door, true)
-    for i = 58, 190, 1 do
-        i = i + 0.0
-        SetEntityHeading(door, i)
-        Wait(i / 3.3) --3.3
+    local particleAsset = "des_vaultdoor"
+    local particleName = "ent_ray_pro1_floating_cash"
+    RequestNamedPtfxAsset(particleAsset)
+    while not HasNamedPtfxAssetLoaded(particleAsset) do
+        Citizen.Wait(1)
     end
+    UseParticleFxAssetNextCall(particleAsset)
+    StartParticleFxNonLoopedAtCoord(particleName, 969.93, 62.17, 59.82, -0.0, 0.0, 53.0, 1.0, false, false, false, false)
+    FreezeEntityPosition(door, true)
+    --for i = 58, 190, 1 do
+    --    i = i + 0.0
+    --    SetEntityHeading(door, i)
+    --    Wait(i / 3.3) --3.3
+    --end
 end
 
 function CloseVault()
@@ -374,7 +387,7 @@ AddEventHandler('drill:Usedrill', function()
             StartDrillAnim(Config)
             StartDrillAnim2(Config)
             Config.DrillSpots[closestDrill].hit = true
-            GiveLockerItems()
+            TriggerServerEvent('qb-casinoheist:server:recieveLockerItem')
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
@@ -566,7 +579,7 @@ function StartGrab()
     DeleteEntity(trollyobj)
     Wait(100)
     PlaceObjectOnGroundProperly(NewTrolley)
-    GiveCartItems()
+    TriggerServerEvent('qb-casinoheist:server:recieveCartItem')
 	Citizen.Wait(1800)
 	DeleteObject(bag)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
@@ -592,19 +605,17 @@ function IsWearingHandshoes()
     return retval
 end
 
-function GiveLockerItems()
-    TriggerServerEvent('qb-casinoheist:server:recieveLockerItem')
-end
-
-function GiveCartItems()
-    TriggerServerEvent('qb-casinoheist:server:recieveCartItem')
-end
-
 function SpawnPeds()
     RequestModel("mp_m_freemode_01")
     while not HasModelLoaded("mp_m_freemode_01") do
         Wait(5)
     end
+    RequestModel("u_m_m_streetart_01")
+    while not HasModelLoaded("u_m_m_streetart_01") do
+        Wait(5)
+    end
+    local doorguy = CreatePed(5, 'a_m_o_beach_02', 985.8, 80.64, 80.99, 328.00, true)
+    TaskStartScenarioInPlace(doorguy, "WORLD_HUMAN_HANG_OUT_STREET", 0, false)
     for k, v in pairs(Config.Peds) do
         --local Yew = CreatePed(5, 'mp_m_freemode_01', v.x, v.y, v.z, v.h, 1, 1)
         local Yew = CreatePed(5, 'mp_m_freemode_01', v.x, v.y, v.z, v.h, true)
@@ -840,9 +851,10 @@ function StartBombAnim(Config) -- bomb no work kek
     FreezeEntityPosition(ped, false)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
 
-    QBCore.Functions.Notify('The bomb will go off in 7 seconds.', "error")
-    Wait(7000)
+    QBCore.Functions.Notify('The bomb will go off in ' ..Config.BombTime.. ' seconds.', "error")
+    Wait(Config.BombTime * 1000)
     AddExplosion(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z, 82, 5.0, true, false, 15.0)
+    
     SetEntityVisible(door, false)
     DeleteObject(bomb)
     DeleteObject(bomb2)
@@ -850,6 +862,27 @@ function StartBombAnim(Config) -- bomb no work kek
     DeleteObject(bomb4)
     loadAnimDict("anim_heist@hs3f@ig8_vault_explosive_react@right@male@")
     TaskPlayAnim(ped, "anim_heist@hs3f@ig8_vault_explosive_react@right@male@", "player_react_explosive_left", 3.0, -8, -1, 16, 0, 0, 0, 0 )
+
+    Wait(100)
+
+    local particleAsset = "core"
+    local particleName = "weap_smoke_grenade"
+    RequestNamedPtfxAsset(particleAsset)
+    while not HasNamedPtfxAssetLoaded(particleAsset) do
+        Citizen.Wait(1)
+    end
+    UseParticleFxAssetNextCall(particleAsset)
+    StartNetworkedParticleFxNonLoopedOnEntity(particleName, door, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, false, false, false)
+
+    local particleAsset2 = "des_fib_ceiling"
+    local particleName2 = "ent_ray_fbi5a_ceiling_debris"
+    RequestNamedPtfxAsset(particleAsset2)
+    while not HasNamedPtfxAssetLoaded(particleAsset2) do
+        Citizen.Wait(1)
+    end
+    UseParticleFxAssetNextCall(particleAsset2)
+    StartNetworkedParticleFxNonLoopedOnEntity(particleName2, door, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, false, false, false)
+
     SpawnCarts()
     SpawnGoldCarts() -- thtowing errors
     SpawnVaultDoor()
@@ -862,8 +895,7 @@ function StartGrabgold()
     local ped = PlayerPedId()
     local model = "ch_prop_gold_bar_01a"
 
-    Trolley = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, GetHashKey("ch_prop_gold_trolly_01a"), false, false,
-                  false)
+    Trolley = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, GetHashKey("ch_prop_gold_trolly_01a"), false, false,false)
     local CashAppear = function()
         local pedCoords = GetEntityCoords(ped)
         local grabmodel = GetHashKey(model)
@@ -920,31 +952,24 @@ function StartGrabgold()
         NetworkRequestControlOfEntity(trollyobj)
     end
     local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), GetEntityCoords(PlayerPedId()), true, false, false)
-    local scene1 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false,
-                       false, 1065353216, 0, 1.3)
+    local scene1 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
-    NetworkAddPedToSynchronisedScene(ped, scene1, "anim@heists@ornate_bank@grab_cash", "intro", 1.5, -4.0, 1, 16,
-        1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, scene1, "anim@heists@ornate_bank@grab_cash", "intro", 1.5, -4.0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, scene1, "anim@heists@ornate_bank@grab_cash", "bag_intro", 4.0, -8.0, 1)
     SetPedComponentVariation(ped, 5, 0, 0, 0)
     NetworkStartSynchronisedScene(scene1)
     Citizen.Wait(1500)
     CashAppear()
-    local scene2 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false,
-                       false, 1065353216, 0, 1.3)
+    local scene2 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
-    NetworkAddPedToSynchronisedScene(ped, scene2, "anim@heists@ornate_bank@grab_cash", "grab", 1.5, -4.0, 1, 16,
-        1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, scene2, "anim@heists@ornate_bank@grab_cash", "grab", 1.5, -4.0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, scene2, "anim@heists@ornate_bank@grab_cash", "bag_grab", 4.0, -8.0, 1)
-    NetworkAddEntityToSynchronisedScene(trollyobj, scene2, "anim@heists@ornate_bank@grab_cash", "cart_cash_dissapear",
-        4.0, -8.0, 1)
+    NetworkAddEntityToSynchronisedScene(trollyobj, scene2, "anim@heists@ornate_bank@grab_cash", "cart_cash_dissapear", 4.0, -8.0, 1)
     NetworkStartSynchronisedScene(scene2)
     Citizen.Wait(37000)
-    local scene3 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false,
-                       false, 1065353216, 0, 1.3)
+    local scene3 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
-    NetworkAddPedToSynchronisedScene(ped, scene3, "anim@heists@ornate_bank@grab_cash", "exit", 1.5, -4.0, 1, 16,
-        1148846080, 0)
+    NetworkAddPedToSynchronisedScene(ped, scene3, "anim@heists@ornate_bank@grab_cash", "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, scene3, "anim@heists@ornate_bank@grab_cash", "bag_exit", 4.0, -8.0, 1)
     NetworkStartSynchronisedScene(scene3)
     NewTrolley = CreateObject(emptyobj, GetEntityCoords(trollyobj) + vector3(0.0, 0.0, -0.985), true)
@@ -955,6 +980,7 @@ function StartGrabgold()
     end
     DeleteObject(trollyobj)
     PlaceObjectOnGroundProperly(NewTrolley)
+    TriggerServerEvent('qb-casinoheist:server:recieveGoldItem')
     Citizen.Wait(1800)
     DeleteObject(bag)
     SetPedComponentVariation(ped, 5, 82, 3, 0)

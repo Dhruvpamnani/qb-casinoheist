@@ -2,9 +2,7 @@ Config = {}
 
 Config.MinimumPolice = 0
 
-Config.HackingTime = 120
-
-Config.HackingSquare = 3
+Config.BombTime = 10
 
 Config.VaultDoors = {
     [1] = {

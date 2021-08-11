@@ -2,19 +2,33 @@ RegisterServerEvent('qb-casinoheist:server:recieveLockerItem')
 AddEventHandler('qb-casinoheist:server:recieveLockerItem', function(type)
     local src = source
     local ply = QBCore.Functions.GetPlayer(src)
-   -- ply.Functions.AddItem('casinochips', math.random(100,800))
-    TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['casinochips'], "add")
+    ply.Functions.AddItem('10kgoldchain', math.random(1,8))
+    TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['10kgoldchain'], "add")
+    chance = math.random(1, 10)
+    print(chance)
+    if chance == 2 then
+        ply.Functions.AddItem('diamond_ring', math.random(1,5))
+        TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['diamond_ring'], "add")
+    end
 end)
 
 RegisterServerEvent('qb-casinoheist:server:recieveCartItem')
 AddEventHandler('qb-casinoheist:server:recieveCartItem', function(type)
     local src = source
     local ply = QBCore.Functions.GetPlayer(src)
-   -- local info = {
-   --     worth = math.random(4000, 6000)
-   -- }
-   -- ply.Functions.AddItem('markedbills', math.random(1,4), false, info)
+    local info = {
+        worth = math.random(4000, 6000)
+    }
+    ply.Functions.AddItem('markedbills', math.random(1,4), false, info)
     TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['markedbills'], "add")
+end)
+
+RegisterServerEvent('qb-casinoheist:server:recieveGoldItem')
+AddEventHandler('qb-casinoheist:server:recieveGoldItem', function(type)
+    local src = source
+    local ply = QBCore.Functions.GetPlayer(src)
+    ply.Functions.AddItem('goldbar', math.random(1,5), false)
+    TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['goldbar'], "add")
 end)
 
 RegisterServerEvent('qb-casinoheist:server:callCops')
