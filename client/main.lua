@@ -2,6 +2,7 @@ Config = Config or {}
 local inRange = false
 local isLoggedIn = false
 local HeistStarted = false
+local Drilling = false
 
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
@@ -78,14 +79,6 @@ StartParticleFxNonLoopedAtCoord(particleName, x, y, z, 0.0, 0.0, 0.0, 5.0, false
 function OpenVault()
     local ped = PlayerPedId()
     local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
-    local particleAsset = "des_vaultdoor"
-    local particleName = "ent_ray_pro1_floating_cash"
-    RequestNamedPtfxAsset(particleAsset)
-    while not HasNamedPtfxAssetLoaded(particleAsset) do
-        Citizen.Wait(1)
-    end
-    UseParticleFxAssetNextCall(particleAsset)
-    StartParticleFxNonLoopedAtCoord(particleName, 969.93, 62.17, 59.82, -0.0, 0.0, 53.0, 1.0, false, false, false, false)
     FreezeEntityPosition(door, true)
     --for i = 58, 190, 1 do
     --    i = i + 0.0
@@ -217,7 +210,7 @@ CreateThread(function()
         local pos = GetEntityCoords(ped)
         for i = 1, 4 do
             local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-            if dist < 1 and not Config.DrillSpots[i].hit then
+            if dist < 1 and not Drilling and not Config.DrillSpots[i].hit then
                 inRange = true
                 DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
                 print(closestDrill)
@@ -225,8 +218,8 @@ CreateThread(function()
                     Wait(500) -- Needed or closestDrill = nil aka big error
                     TriggerEvent('drill:Usedrill')
                 end
-            elseif dist < 1 and Config.DrillSpots[i].hit then
-                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '~r~ Empty')
+            --elseif dist < 1 and Config.DrillSpots[i].hit then
+            --    DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '~r~ Empty')
             end
         end
     end
@@ -382,12 +375,14 @@ AddEventHandler('drill:Usedrill', function()
     end
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
+            Drilling = true
             SetCurrentPedWeapon(ped, GetHashKey('WEAPON_UNARMED'), true)
             Wait(2000)
             StartDrillAnim(Config)
             StartDrillAnim2(Config)
             Config.DrillSpots[closestDrill].hit = true
             TriggerServerEvent('qb-casinoheist:server:recieveLockerItem')
+            Drilling = false
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
