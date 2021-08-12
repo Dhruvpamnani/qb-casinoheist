@@ -17,9 +17,9 @@ AddEventHandler('qb-casinoheist:server:recieveCartItem', function(type)
     local src = source
     local ply = QBCore.Functions.GetPlayer(src)
     local info = {
-        worth = math.random(4000, 6000)
+        worth = math.random(Config.MarkedMin, Config.MarkedMax)
     }
-    ply.Functions.AddItem('markedbills', math.random(1,4), false, info)
+    ply.Functions.AddItem('markedbills', math.random(Config.MarkedBagMin,Config.MarkedBagMax), false, info)
     TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['markedbills'], "add")
 end)
 

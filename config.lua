@@ -4,6 +4,14 @@ Config.MinimumPolice = 0
 
 Config.BombTime = 10
 
+Config.MarkedBagMin = 1
+
+Config.MarkedBagMax = 5
+
+Config.MarkedMin = 1000 
+
+Config.MarkedMax = 2000
+
 Config.VaultDoors = {
     [1] = {
         x = 974.67,

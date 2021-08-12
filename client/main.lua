@@ -166,25 +166,6 @@ CreateThread(function()
     end
 end)
 
---[[CreateThread(function()  -- I dont remember why this is here lmao
-    while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        for i = 1, 3 do
-            local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
-            if dist < 2 then
-                inRange = true
-                DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '[~b~E~s~] Take')
-                if IsControlJustPressed(0, 38) then
-                    Wait(500)
-                    StartGrab()
-                end
-            end
-        end
-    end
-end)]]
-
 CreateThread(function()
     while true do
         Wait(0)
@@ -252,33 +233,6 @@ Citizen.CreateThread(function()
         if QBCore ~= nil then
             inRange = false
 
-            for k, v in pairs(Config.Trolleys) do
-                dist = #(pos - vector3(Config.Trolleys[k].x, Config.Trolleys[k].y, Config.Trolleys[k].z))
-                if dist < 3 and Config.Trolleys[k].hit == false then
-                    closestTrolley = k
-                    inRange = true
-                end
-            end
-
-            if not inRange then
-                Citizen.Wait(100)
-                closestTrolley = nil
-            end
-        end
-
-        Citizen.Wait(3)
-    end
-end)
-
-Citizen.CreateThread(function()
-    while true do
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        local dist
-
-        if QBCore ~= nil then
-            inRange = false
-
             for k, v in pairs(Config.DrillSpots) do
                 dist = #(pos - vector3(Config.DrillSpots[k]["x"], Config.DrillSpots[k]["y"], Config.DrillSpots[k]["z"]))
                 if dist < 1.5 and Config.DrillSpots[k].hit == false then
@@ -288,7 +242,7 @@ Citizen.CreateThread(function()
             end
 
             if not inRange then
-                Citizen.Wait(1500)
+                Citizen.Wait(2000)
                 closestDrill = nil
             end
         end
