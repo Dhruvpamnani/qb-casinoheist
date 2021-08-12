@@ -196,7 +196,6 @@ CreateThread(function()
             DrawText3Ds(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z + 1, '[~b~E~s~] Hit')
             if IsControlJustPressed(0, 38) then
                 Wait(500)
-                Config.VaultBomb[1].hit = true
                 TriggerEvent('bomb:Usebomb')
             end
         end
@@ -399,6 +398,7 @@ AddEventHandler('bomb:Usebomb', function()
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
             SetEntityHeading(ped, 326.34)
+            Config.VaultBomb[1].hit = true
             StartBombAnim(Config)
             currentSafe = 1
             local s1, s2 = Citizen.InvokeNative(0x2EB41072B4C1E4C0, pos.x, pos.y, pos.z, Citizen.PointerValueInt(), Citizen.PointerValueInt())
