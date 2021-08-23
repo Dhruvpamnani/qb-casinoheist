@@ -2,7 +2,7 @@ Config = {}
 
 Config.MinimumPolice = 0
 
-Config.BombTime = 10
+Config.BombTime = 3
 
 Config.HackTime = 10
 
@@ -218,69 +218,59 @@ Config.Peds = {
         y = 66.3,
         z = 59.83,
         h = 66.29,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [2] = {
         x = 976.58,
         y = 61.05,
         z = 59.83,
         h = 60.2,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [3] = {
         x = 969.06,
         y = 56.46,
         z = 59.83,
         h = 5.54,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [4] = {
         x = 972.59,
         y = 65.42,
         z = 59.83,
         h = 109.62,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [5] = {
         x = 942.55,
         y = 37.43,
         z = 59.83,
         h = 224.00,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [6] = {
         x = 935.99,
         y = 39.68,
         z = 59.83,
         h = 140.00,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [7] = {
         x = 918.93,
         y = 44.42,
         z = 59.83,
         h = 238.00,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [8] = {
         x = 938.47,
         y = 22.07,
         z = 59.83,
         h = 238.00,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [9] = {
         x = 930.71,
         y = 46.37,
         z = 59.83,
         h = 98.00,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     },
     [10] = {
         x = 946.26,
         y = 36.43,
         z = 59.83,
         h = 54.00,
-        weapon = "WEAPON_CARBINERIFLE_MK2",
     }
 }

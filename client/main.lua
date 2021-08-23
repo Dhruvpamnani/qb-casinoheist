@@ -59,19 +59,11 @@ end
 
 CreateThread(function()
     TriggerServerEvent('qb-casinoheist:server:spawnvault')
-    --SpawnPeds()
+    SpawnPeds()  -- Not Ready for Use
 end)
 
 RegisterCommand("fuckaj2", function()
     TriggerServerEvent('qb-casinoheist:server:spawnvault')
-end)
-
-RegisterCommand("fuckaj", function()
-    TriggerServerEvent('aj:sync', true)
-end)
-
-RegisterCommand("fuckaj1", function()
-    TriggerServerEvent('aj:sync', false)
 end)
 
 UseParticleFxAssetNextCall(particleAsset)
@@ -223,7 +215,7 @@ Citizen.CreateThread(function()
             end
         end
 
-        Wait(3)
+        Wait(5)
     end
 end)
 
@@ -250,7 +242,7 @@ Citizen.CreateThread(function()
             end
         end
 
-        Wait(3)
+        Wait(5)
     end
 end)
 
