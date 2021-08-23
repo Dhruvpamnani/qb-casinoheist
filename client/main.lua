@@ -252,7 +252,7 @@ Citizen.CreateThread(function()
 
             for k, v in pairs(Config.KeycardDoors) do
                 dist = #(pos - vector3(Config.KeycardDoors[k]["x"], Config.KeycardDoors[k]["y"], Config.KeycardDoors[k]["z"]))
-                if dist < 2 then
+                if dist < 1 then
                     closestKeypad = k
                     inRange = true
                 end
@@ -366,7 +366,6 @@ end
 
 function StartHackAnim(Config)
     local animDict = "anim@heists@ornate_bank@hack"
-
     RequestAnimDict(animDict)
     RequestModel("hei_prop_hst_laptop")
     RequestModel("ch_p_m_bag_var03_arm_s")
@@ -427,6 +426,7 @@ end
 function OnHackDone(success, timeremaining)
     if success then
         TriggerEvent('mhacking:hide')
+        TriggerServerEvent('nui_doorlock:server:updateState', Config.KeycardDoors[closestKeypad].id, false, false, false, true)
         Config.KeycardDoors[closestKeypad].isOpen = true
     else
 		TriggerEvent('mhacking:hide')

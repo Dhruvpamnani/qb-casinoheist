@@ -4,7 +4,7 @@ Config.MinimumPolice = 0
 
 Config.BombTime = 3
 
-Config.HackTime = 10
+Config.HackTime = 30
 
 Config.MarkedBagMin = 1
 
@@ -77,7 +77,7 @@ Config.KeycardDoors = {
         animationy = 18.07 + 0.5,
         animationz = 59.84,
         isOpen = false,
-        id = 7
+        id = 3
     },
     [2] = {
         x = 949.88,
@@ -88,7 +88,7 @@ Config.KeycardDoors = {
         animationy = 26.2 + 0.2,
         animationz = 71.83,
         isOpen = false,
-        id = 11
+        id = 1
     },
     [3] = {
         x = 961.61,
@@ -99,7 +99,7 @@ Config.KeycardDoors = {
         animationy = 16.08 + 0.8,
         animationz = 71.84,
         isOpen = false,
-        id = 1
+        id = 2
     },
 }
 
