@@ -67,6 +67,20 @@ Config.GoldTrolleys = {
     }
 }
 
+Config.SlideDoors = {
+    [1] = {
+        x = 996.06,
+        y = 60.5,
+        z = 59.83,
+        h = 142.39,
+        animationx = 960.59 + 0.0,
+        animationy = 18.07 + 0.5,
+        animationz = 59.84,
+        isOpen = false,
+        id = nil
+    }
+}
+
 Config.KeycardDoors = {
     [1] = {
         x = 960.59,
@@ -87,7 +101,7 @@ Config.KeycardDoors = {
         animationx = 949.88 + 0.2,
         animationy = 26.2 + 0.2,
         animationz = 71.83,
-        isOpen = false,
+        isOpen = true,  --needs to be false
         id = 1
     },
     [3] = {
