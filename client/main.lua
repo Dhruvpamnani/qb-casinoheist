@@ -19,7 +19,7 @@ function SpawnCarts()
     local pos = GetEntityCoords(ped)
     local model = "hei_prop_hei_cash_trolly_01"
     RequestModel(model)
-    while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
+    while not HasModelLoaded(model) do RequestModel(model) Wait(100) end
     ClearAreaOfObjects(989.14, 50.54, 59.65, 10, 0)
     for i = 1, 3 do
         local obj = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 3.0, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
@@ -36,7 +36,7 @@ function SpawnGoldCarts()
     local pos = GetEntityCoords(ped)
     local model = "ch_prop_gold_trolly_01a"
     RequestModel(model)
-    while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
+    while not HasModelLoaded(model) do RequestModel(model) Wait(100) end
     ClearAreaOfObjects(989.14, 50.54, 59.65, 10, 0)
     for i = 1, 1 do
         local obj = GetClosestObjectOfType(Config.GoldTrolleys[i].x, Config.GoldTrolleys[i].y, Config.GoldTrolleys[i].z, 3.0, GetHashKey("ch_prop_gold_trolly_01a"), false, false, false)
@@ -51,17 +51,19 @@ end
 function SpawnBrokenVault()
     local model = "ch_des_heist3_vault_end"
     RequestModel(model)
-    while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
+    while not HasModelLoaded(model) do RequestModel(model) Wait(100) end
     --ClearAreaOfObjects(989.14, 50.54, 59.65, 10, 0)
     local BrokenDoor = CreateObject(model, Config.VaultDoors[1].x + 0.2, Config.VaultDoors[1].y + 0.66, Config.VaultDoors[1].z - 1.6, true, true, false)
-    Wait(100)
     SetEntityHeading(BrokenDoor, 325.00)
-    Wait(1000)
 end
 
 CreateThread(function()
-    --TriggerServerEvent('aj:sync')
+    TriggerServerEvent('qb-casinoheist:server:spawnvault')
     --SpawnPeds()
+end)
+
+RegisterCommand("fuckaj2", function()
+    TriggerServerEvent('qb-casinoheist:server:spawnvault')
 end)
 
 RegisterCommand("fuckaj", function()
@@ -171,11 +173,9 @@ CreateThread(function()
                 DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
                 print(closestDrill)
                 if IsControlJustPressed(0, 38) then
-                    Wait(500) -- Needed or closestDrill = nil aka big error
+                    Wait(500)
                     TriggerEvent('drill:Usedrill')
                 end
-            --elseif dist < 1 and Config.DrillSpots[i].hit then
-            --    DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '~r~ Empty')
             end
         end
     end
@@ -218,12 +218,12 @@ Citizen.CreateThread(function()
             end
 
             if not inRange then
-                Citizen.Wait(2000)
+                Wait(2000)
                 closestDrill = nil
             end
         end
 
-        Citizen.Wait(3)
+        Wait(3)
     end
 end)
 
@@ -245,34 +245,34 @@ Citizen.CreateThread(function()
             end
 
             if not inRange then
-                Citizen.Wait(2000)
+                Wait(2000)
                 closestKeypad = nil
             end
         end
 
-        Citizen.Wait(3)
+        Wait(3)
     end
 end)
 
-CreateThread(function()
-    while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        local dist
-        dist = #(pos - vector3(980.87, 12.43, 71.84))
-        dict = "anim@scripted@player@mission@tunf_bunk_ig3_nas_upload@"
-        if dist < 1 then
-            if IsControlJustPressed(0, 38) then
-                loadAnimDict(dict)
-                TaskPlayAnim(ped, dict, "05_dialogue_upload_speed", 3.0, -8, -1, 32, 0, 0, 0, 0 )
-                Wait(20000)
-                TaskPlayAnim(ped, dict, "12_outro_renumeration", 3.0, -8, -1, 32, 0, 0, 0, 0 )
-                print("disabled cams")
-            end
-        end
-    end
-end)
+-- CreateThread(function()
+--     while true do
+--         Wait(0)
+--         local ped = PlayerPedId()
+--         local pos = GetEntityCoords(ped)
+--         local dist
+--         dist = #(pos - vector3(980.87, 12.43, 71.84))
+--         dict = "anim@scripted@player@mission@tunf_bunk_ig3_nas_upload@"
+--         if dist < 1 then
+--             if IsControlJustPressed(0, 38) then
+--                 loadAnimDict(dict)
+--                 TaskPlayAnim(ped, dict, "05_dialogue_upload_speed", 3.0, -8, -1, 32, 0, 0, 0, 0 )
+--                 Wait(20000)
+--                 TaskPlayAnim(ped, dict, "12_outro_renumeration", 3.0, -8, -1, 32, 0, 0, 0, 0 )
+--                 print("disabled cams")
+--             end
+--         end
+--     end
+-- end)
 
 RegisterNetEvent('security_card_02:Usesecurity_card_02')
 AddEventHandler('security_card_02:Usesecurity_card_02', function()
@@ -286,16 +286,13 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
             --TriggerServerEvent("QBCore:Server:RemoveItem", "security_card_02", 1)
             SetEntityHeading(ped, Config.KeycardDoors[closestKeypad].h)
             StartHackAnim(Config)
-            print(Config.KeycardDoors[closestKeypad].id)
-            Config.KeycardDoors[closestKeypad].isOpen = true
-            TriggerServerEvent('nui_doorlock:server:updateState', Config.KeycardDoors[closestKeypad].id, false, false, false, true)
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
     end, "security_card_02")
 end)
 
-RegisterNetEvent('drill:Usedrill') -- Drills a full set of lockers
+RegisterNetEvent('drill:Usedrill')
 AddEventHandler('drill:Usedrill', function()
     local ped = PlayerPedId()
     local pos = GetEntityCoords(ped)
@@ -349,11 +346,9 @@ end)
 function loadAnimDict(dict)
     while (not HasAnimDictLoaded(dict)) do
         RequestAnimDict(dict)
-        Citizen.Wait(5)
+        Wait(5)
     end
 end
-
---Hacking Laptop Anim
 
 function StartHackAnim(Config)
     local animDict = "anim@heists@ornate_bank@hack"
@@ -365,14 +360,14 @@ function StartHackAnim(Config)
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("hei_prop_hst_laptop")
         or not HasModelLoaded("ch_p_m_bag_var03_arm_s") do
-        Citizen.Wait(100)
+        Wait(100)
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
     local animPos = GetAnimInitialOffsetPosition(animDict, "hack_enter", Config.KeycardDoors[closestKeypad].animationx + 0, Config.KeycardDoors[closestKeypad].animationy + 0, Config.KeycardDoors[closestKeypad].animationz + 0.85) -- Animasyon kordinatları, buradan lokasyonu değiştirin // These are fixed locations so if you want to change animation location change here
     local animPos2 = GetAnimInitialOffsetPosition(animDict, "hack_loop", Config.KeycardDoors[closestKeypad].animationx + 0, Config.KeycardDoors[closestKeypad].animationy + 0, Config.KeycardDoors[closestKeypad].animationz + 0.85)
     local animPos3 = GetAnimInitialOffsetPosition(animDict, "hack_exit", Config.KeycardDoors[closestKeypad].animationx + 0, Config.KeycardDoors[closestKeypad].animationy + 0, Config.KeycardDoors[closestKeypad].animationz + 0.85)
-    -- part1
+
     FreezeEntityPosition(ped, true)
     local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.3)
     NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "hack_enter", 0, 0, 1, 16, 1148846080, 0)
@@ -380,30 +375,32 @@ function StartHackAnim(Config)
     NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "hack_enter_bag", 4.0, -8.0, 1)
     local laptop = CreateObject(GetHashKey("hei_prop_hst_laptop"), targetPosition, 1, 1, 0)
     NetworkAddEntityToSynchronisedScene(laptop, netScene, animDict, "hack_enter_laptop", 4.0, -8.0, 1)
-    -- part2
+
     local netScene2 = NetworkCreateSynchronisedScene(animPos2, targetRotation, 2, false, true, 1065353216, 0, 1.3)
     NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "hack_loop", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "hack_loop_bag", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(laptop, netScene2, animDict, "hack_loop_laptop", 4.0, -80.0, 1)
-    -- part3
+
     local netScene3 = NetworkCreateSynchronisedScene(animPos3, targetRotation, 2, false, true, 1065353216, 0, 1.3)
     NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "hack_exit", 0, 0, 1, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "hack_exit_bag", 4.0, -8.0, 1)
     NetworkAddEntityToSynchronisedScene(laptop, netScene3, animDict, "hack_exit_laptop", 4.0, -8.0, 1)
 
-    SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
+    SetPedComponentVariation(ped, 5, 0, 0, 0)
     SetEntityHeading(ped, 63.60)
 
     NetworkStartSynchronisedScene(netScene)
-    Citizen.Wait(6000) -- You can try editing this to make transitions perfect
+    Wait(6000)
     NetworkStopSynchronisedScene(netScene)
 
     NetworkStartSynchronisedScene(netScene2)
-    Citizen.Wait(6600)
+    TriggerEvent("mhacking:show")
+    TriggerEvent("mhacking:start", 3, Config.HackTime, OnHackDone)
+    Wait(Config.HackTime * 1000)
     NetworkStopSynchronisedScene(netScene2)
 
     NetworkStartSynchronisedScene(netScene3)
-    Citizen.Wait(4300)
+    Wait(4300)
     NetworkStopSynchronisedScene(netScene3)
 
     DeleteObject(bag)
@@ -411,6 +408,15 @@ function StartHackAnim(Config)
     DeleteObject(card)
     FreezeEntityPosition(ped, false)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
+end
+
+function OnHackDone(success, timeremaining)
+    if success then
+        TriggerEvent('mhacking:hide')
+        Config.KeycardDoors[closestKeypad].isOpen = true
+    else
+		TriggerEvent('mhacking:hide')
+	end
 end
 
 --Cart Grab Anim
@@ -427,7 +433,7 @@ function StartGrab()
 
         RequestModel(grabmodel)
         while not HasModelLoaded(grabmodel) do
-            Citizen.Wait(100)
+            Wait(100)
         end
 	    local grabobj = CreateObject(grabmodel, pedCoords, true)
 
@@ -440,7 +446,7 @@ function StartGrab()
 
 	    Citizen.CreateThread(function()
 		    while GetGameTimer() - startedGrabbing < 37000 do
-			    Citizen.Wait(1)
+			    Wait(1)
 			    DisableControlAction(0, 73, true)
 			    if HasAnimEventFired(ped, GetHashKey("CASH_APPEAR")) then
 				    if not IsEntityVisible(grabobj) then
@@ -468,10 +474,10 @@ function StartGrab()
     RequestModel(baghash)
     RequestModel(emptyobj)
     while not HasAnimDictLoaded("anim@heists@ornate_bank@grab_cash") and not HasModelLoaded(emptyobj) and not HasModelLoaded(baghash) do
-        Citizen.Wait(100)
+        Wait(100)
     end
 	while not NetworkHasControlOfEntity(trollyobj) do
-		Citizen.Wait(1)
+		Wait(1)
 		NetworkRequestControlOfEntity(trollyobj)
 	end
 	local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), GetEntityCoords(PlayerPedId()), true, false, false)
@@ -481,7 +487,7 @@ function StartGrab()
     NetworkAddEntityToSynchronisedScene(bag, scene1, "anim@heists@ornate_bank@grab_cash", "bag_intro", 4.0, -8.0, 1)
     SetPedComponentVariation(ped, 5, 0, 0, 0)
 	NetworkStartSynchronisedScene(scene1)
-	Citizen.Wait(1500)
+	Wait(1500)
 	CashAppear()
 	local scene2 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
@@ -489,7 +495,7 @@ function StartGrab()
 	NetworkAddEntityToSynchronisedScene(bag, scene2, "anim@heists@ornate_bank@grab_cash", "bag_grab", 4.0, -8.0, 1)
 	NetworkAddEntityToSynchronisedScene(trollyobj, scene2, "anim@heists@ornate_bank@grab_cash", "cart_cash_dissapear", 4.0, -8.0, 1)
 	NetworkStartSynchronisedScene(scene2)
-	Citizen.Wait(37000) -- 37000
+	Wait(37000)
 	local scene3 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
 	NetworkAddPedToSynchronisedScene(ped, scene3, "anim@heists@ornate_bank@grab_cash", "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
@@ -498,7 +504,7 @@ function StartGrab()
     NewTrolley = CreateObject(emptyobj, GetEntityCoords(trollyobj) + vector3(0.0, 0.0, - 0.985), true)
     SetEntityRotation(NewTrolley, GetEntityRotation(trollyobj))
 	while not NetworkHasControlOfEntity(trollyobj) do
-		Citizen.Wait(1)
+		Wait(1)
 		NetworkRequestControlOfEntity(trollyobj)
 	end
 	DeleteObject(trollyobj)
@@ -506,7 +512,7 @@ function StartGrab()
     Wait(100)
     PlaceObjectOnGroundProperly(NewTrolley)
     TriggerServerEvent('qb-casinoheist:server:recieveCartItem')
-	Citizen.Wait(1800)
+	Wait(1800)
 	DeleteObject(bag)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
 	RemoveAnimDict("anim@heists@ornate_bank@grab_cash")
@@ -543,7 +549,6 @@ function SpawnPeds()
     local doorguy = CreatePed(5, 'a_m_o_beach_02', 985.8, 80.64, 80.99, 328.00, true)
     TaskStartScenarioInPlace(doorguy, "WORLD_HUMAN_HANG_OUT_STREET", 0, false)
     for k, v in pairs(Config.Peds) do
-        --local Yew = CreatePed(5, 'mp_m_freemode_01', v.x, v.y, v.z, v.h, 1, 1)
         local Yew = CreatePed(5, 'mp_m_freemode_01', v.x, v.y, v.z, v.h, true)
         SetPedComponentVariation(Yew, 11, 317, 1, 0)
         --SetPedComponentVariation(Yew, 3, 16, 0, 0)
@@ -583,7 +588,7 @@ function StartDrillAnim(Config)
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("ch_prop_vault_drill_01a")
         or not HasModelLoaded("ch_p_m_bag_var03_arm_s") do
-        Citizen.Wait(100)
+        Wait(100)
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
@@ -609,19 +614,19 @@ function StartDrillAnim(Config)
     NetworkAddEntityToSynchronisedScene(bag, netScene4, animDict, "reward_p_m_bag_var22_arm_s", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(drill, netScene4, animDict, "reward_ch_prop_vault_drill_01a", 4.0, -80.0, 1)
 
-    SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
+    SetPedComponentVariation(ped, 5, 0, 0, 0)
     SetEntityHeading(ped, 63.60)
 
     NetworkStartSynchronisedScene(netScene)
-    Citizen.Wait(3200) -- You can try editing this to make transitions perfect
+    Wait(3200)
     NetworkStopSynchronisedScene(netScene)
 
     NetworkStartSynchronisedScene(netScene2)
-    Citizen.Wait(6000)
+    Wait(6000)
     NetworkStopSynchronisedScene(netScene2)
 
     NetworkStartSynchronisedScene(netScene4)
-    Citizen.Wait(4300)
+    Wait(4300)
     NetworkStopSynchronisedScene(netScene4)
 
     DeleteObject(bag)
@@ -641,7 +646,7 @@ function StartDrillAnim2(Config)
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("ch_prop_vault_drill_01a")
         or not HasModelLoaded("ch_p_m_bag_var03_arm_s") do
-        Citizen.Wait(100)
+        Wait(100)
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
@@ -650,12 +655,8 @@ function StartDrillAnim2(Config)
     local animPos3 = GetAnimInitialOffsetPosition(animDict, "exit", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
     -- ENTER
     FreezeEntityPosition(ped, true)
-    local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "enter", 0, 0, 1, 16, 1148846080, 0)
     local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), targetPosition, 1, 1, 0)
-    NetworkAddEntityToSynchronisedScene(bag, netScene, animDict, "enter_p_m_bag_var22_arm_s", 4.0, -8.0, 1)
     local drill = CreateObject(GetHashKey("ch_prop_vault_drill_01a"), targetPosition, 1, 1, 0)
-    NetworkAddEntityToSynchronisedScene(drill, netScene, animDict, "enter_ch_prop_vault_drill_01a", 4.0, -8.0, 1)
     -- LOCKER 1
     local netScene2 = NetworkCreateSynchronisedScene(animPos, targetRotation, 2, false, true, 1065353216, 0, 1.0)
     NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "action", 0, 0, 10, 16, 1148846080, 0)
@@ -675,20 +676,16 @@ function StartDrillAnim2(Config)
     SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
     SetEntityHeading(ped, 63.60)
 
-    --NetworkStartSynchronisedScene(netScene)
-    --Citizen.Wait(3200) -- You can try editing this to make transitions perfect
-    --NetworkStopSynchronisedScene(netScene)
-
     NetworkStartSynchronisedScene(netScene2)
-    Citizen.Wait(6000)
+    Wait(6000)
     NetworkStopSynchronisedScene(netScene2)
 
     NetworkStartSynchronisedScene(netScene4)
-    Citizen.Wait(3300)
+    Wait(3300)
     NetworkStopSynchronisedScene(netScene4)
 
     NetworkStartSynchronisedScene(netScene3)
-    Citizen.Wait(3000)
+    Wait(3000)
     NetworkStopSynchronisedScene(netScene3)
 
     DeleteObject(bag)
@@ -698,7 +695,7 @@ function StartDrillAnim2(Config)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
 end
 
-function StartBombAnim(Config) -- bomb no work kek
+function StartBombAnim(Config)
     local animDict = "anim_heist@hs3f@ig8_vault_explosives@right@male@"
 
     RequestAnimDict(animDict)
@@ -708,7 +705,7 @@ function StartBombAnim(Config) -- bomb no work kek
     while not HasAnimDictLoaded(animDict)
         or not HasModelLoaded("ch_prop_ch_explosive_01a")
         or not HasModelLoaded("ch_p_m_bag_var03_arm_s") do
-        Citizen.Wait(100)
+        Wait(100)
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
@@ -753,23 +750,23 @@ function StartBombAnim(Config) -- bomb no work kek
     SetPedComponentVariation(ped, 5, 0, 0, 0) -- removes bag from ped so no 2 bags
 
     NetworkStartSynchronisedScene(netScene2)
-    Citizen.Wait(1200)
+    Wait(1200)
     DeleteObject(bomb)
     SetEntityVisible(bomb2, true)
     NetworkStopSynchronisedScene(netScene2)
 
     NetworkStartSynchronisedScene(netScene3)
-    Citizen.Wait(2800)
+    Wait(2800)
     SetEntityVisible(bomb3, true)
     NetworkStopSynchronisedScene(netScene3)
 
     NetworkStartSynchronisedScene(netScene4)
-    Citizen.Wait(2800)
+    Wait(2800)
     SetEntityVisible(bomb4, true)
     NetworkStopSynchronisedScene(netScene4)
 
     NetworkStartSynchronisedScene(netScene5)
-    Citizen.Wait(2800)
+    Wait(2800)
     NetworkStopSynchronisedScene(netScene5)
 
     DeleteObject(bag)
@@ -790,26 +787,8 @@ function StartBombAnim(Config) -- bomb no work kek
 
     Wait(100)
 
-    -- local particleAsset = "core"
-    -- local particleName = "weap_smoke_grenade"
-    -- RequestNamedPtfxAsset(particleAsset)
-    -- while not HasNamedPtfxAssetLoaded(particleAsset) do
-    --     Citizen.Wait(1)
-    -- end
-    -- UseParticleFxAssetNextCall(particleAsset)
-    -- StartNetworkedParticleFxNonLoopedOnEntity(particleName, door, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, false, false, false)
-
-    -- local particleAsset2 = "des_fib_ceiling"
-    -- local particleName2 = "ent_ray_fbi5a_ceiling_debris"
-    -- RequestNamedPtfxAsset(particleAsset2)
-    -- while not HasNamedPtfxAssetLoaded(particleAsset2) do
-    --     Citizen.Wait(1)
-    -- end
-    -- UseParticleFxAssetNextCall(particleAsset2)
-    -- StartNetworkedParticleFxNonLoopedOnEntity(particleName2, door, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, false, false, false)
-
-    --SpawnCarts()
-    --SpawnGoldCarts() -- thtowing errors
+    SpawnCarts()
+    SpawnGoldCarts() -- thtowing errors
     SpawnBrokenVault()
 end
 
@@ -825,7 +804,7 @@ function StartGrabgold()
 
         RequestModel(grabmodel)
         while not HasModelLoaded(grabmodel) do
-            Citizen.Wait(100)
+            Wait(100)
         end
         local grabobj = CreateObject(grabmodel, pedCoords, true)
 
@@ -839,7 +818,7 @@ function StartGrabgold()
 
         Citizen.CreateThread(function()
             while GetGameTimer() - startedGrabbing < 37000 do
-                Citizen.Wait(1)
+                Wait(1)
                 DisableControlAction(0, 73, true)
                 if HasAnimEventFired(ped, GetHashKey("CASH_APPEAR")) then
                     if not IsEntityVisible(grabobj) then
@@ -868,10 +847,10 @@ function StartGrabgold()
     RequestModel(emptyobj)
     while not HasAnimDictLoaded("anim@heists@ornate_bank@grab_cash") and not HasModelLoaded(emptyobj) and
         not HasModelLoaded(baghash) do
-        Citizen.Wait(100)
+        Wait(100)
     end
     while not NetworkHasControlOfEntity(trollyobj) do
-        Citizen.Wait(1)
+        Wait(1)
         NetworkRequestControlOfEntity(trollyobj)
     end
     local bag = CreateObject(GetHashKey("ch_p_m_bag_var03_arm_s"), GetEntityCoords(PlayerPedId()), true, false, false)
@@ -881,7 +860,7 @@ function StartGrabgold()
     NetworkAddEntityToSynchronisedScene(bag, scene1, "anim@heists@ornate_bank@grab_cash", "bag_intro", 4.0, -8.0, 1)
     SetPedComponentVariation(ped, 5, 0, 0, 0)
     NetworkStartSynchronisedScene(scene1)
-    Citizen.Wait(1500)
+    Wait(1500)
     CashAppear()
     local scene2 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
@@ -889,7 +868,7 @@ function StartGrabgold()
     NetworkAddEntityToSynchronisedScene(bag, scene2, "anim@heists@ornate_bank@grab_cash", "bag_grab", 4.0, -8.0, 1)
     NetworkAddEntityToSynchronisedScene(trollyobj, scene2, "anim@heists@ornate_bank@grab_cash", "cart_cash_dissapear", 4.0, -8.0, 1)
     NetworkStartSynchronisedScene(scene2)
-    Citizen.Wait(37000)
+    Wait(37000)
     local scene3 = NetworkCreateSynchronisedScene(GetEntityCoords(trollyobj), GetEntityRotation(trollyobj), 2, false, false, 1065353216, 0, 1.3)
 
     NetworkAddPedToSynchronisedScene(ped, scene3, "anim@heists@ornate_bank@grab_cash", "exit", 1.5, -4.0, 1, 16, 1148846080, 0)
@@ -898,13 +877,13 @@ function StartGrabgold()
     NewTrolley = CreateObject(emptyobj, GetEntityCoords(trollyobj) + vector3(0.0, 0.0, -0.985), true)
     SetEntityRotation(NewTrolley, GetEntityRotation(trollyobj))
     while not NetworkHasControlOfEntity(trollyobj) do
-        Citizen.Wait(1)
+        Wait(1)
         NetworkRequestControlOfEntity(trollyobj)
     end
     DeleteObject(trollyobj)
     PlaceObjectOnGroundProperly(NewTrolley)
     TriggerServerEvent('qb-casinoheist:server:recieveGoldItem')
-    Citizen.Wait(1800)
+    Wait(1800)
     DeleteObject(bag)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
     RemoveAnimDict("anim@heists@ornate_bank@grab_cash")

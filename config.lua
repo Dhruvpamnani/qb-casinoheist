@@ -4,6 +4,8 @@ Config.MinimumPolice = 0
 
 Config.BombTime = 10
 
+Config.HackTime = 10
+
 Config.MarkedBagMin = 1
 
 Config.MarkedBagMax = 5
