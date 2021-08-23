@@ -48,7 +48,7 @@ function SpawnGoldCarts()
     end
 end
 
-function SpawnVaultDoor()
+function SpawnBrokenVault()
     local model = "ch_des_heist3_vault_end"
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Citizen.Wait(100) end
@@ -57,47 +57,23 @@ function SpawnVaultDoor()
     Wait(100)
     SetEntityHeading(BrokenDoor, 325.00)
     Wait(1000)
-    print(GetEntityHeading(BrokenDoor))
 end
 
 CreateThread(function()
-    CloseVault()
+    --TriggerServerEvent('aj:sync')
     --SpawnPeds()
 end)
 
-RegisterCommand("OpenVault", function()
-    OpenVault()
-end)
-RegisterCommand("CloseVault", function()
-    CloseVault()
+RegisterCommand("fuckaj", function()
+    TriggerServerEvent('aj:sync', true)
 end)
 
+RegisterCommand("fuckaj1", function()
+    TriggerServerEvent('aj:sync', false)
+end)
 
 UseParticleFxAssetNextCall(particleAsset)
 StartParticleFxNonLoopedAtCoord(particleName, x, y, z, 0.0, 0.0, 0.0, 5.0, false, false, false, false)
-
-function OpenVault()
-    local ped = PlayerPedId()
-    local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
-    FreezeEntityPosition(door, true)
-    --for i = 58, 190, 1 do
-    --    i = i + 0.0
-    --    SetEntityHeading(door, i)
-    --    Wait(i / 3.3) --3.3
-    --end
-end
-
-function CloseVault()
-    local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
-    FreezeEntityPosition(door, true)
-    SetEntityVisible(door, true)
-    SetEntityCollision(door, true, true)
-    for i = 190, 302, 1 do
-        i = i + 0.0
-        SetEntityHeading(door, -i)
-        Wait(-i / 3.3) --3.3
-    end
-end
 
 function DrawText3Ds(x, y, z, text)
 	SetTextScale(0.35, 0.35)
@@ -353,6 +329,7 @@ AddEventHandler('bomb:Usebomb', function()
         if result then
             SetEntityHeading(ped, 326.34)
             Config.VaultBomb[1].hit = true
+            TriggerServerEvent('aj:sync')
             StartBombAnim(Config)
             currentSafe = 1
             local s1, s2 = Citizen.InvokeNative(0x2EB41072B4C1E4C0, pos.x, pos.y, pos.z, Citizen.PointerValueInt(), Citizen.PointerValueInt())
@@ -723,7 +700,6 @@ end
 
 function StartBombAnim(Config) -- bomb no work kek
     local animDict = "anim_heist@hs3f@ig8_vault_explosives@right@male@"
-    local door = GetClosestObjectOfType(Config.VaultDoors[1].x, Config.VaultDoors[1].y, Config.VaultDoors[1].z, 3.0, GetHashKey("ch_prop_ch_vaultdoor01x"), false, false, false)
 
     RequestAnimDict(animDict)
     RequestModel("ch_prop_ch_explosive_01a")
@@ -803,8 +779,8 @@ function StartBombAnim(Config) -- bomb no work kek
     QBCore.Functions.Notify('The bomb will go off in ' ..Config.BombTime.. ' seconds.', "error")
     Wait(Config.BombTime * 1000)
     AddExplosion(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z, 82, 5.0, true, false, 15.0)
+    TriggerServerEvent('aj:sync', false)
     
-    SetEntityVisible(door, false)
     DeleteObject(bomb)
     DeleteObject(bomb2)
     DeleteObject(bomb3)
@@ -814,29 +790,27 @@ function StartBombAnim(Config) -- bomb no work kek
 
     Wait(100)
 
-    local particleAsset = "core"
-    local particleName = "weap_smoke_grenade"
-    RequestNamedPtfxAsset(particleAsset)
-    while not HasNamedPtfxAssetLoaded(particleAsset) do
-        Citizen.Wait(1)
-    end
-    UseParticleFxAssetNextCall(particleAsset)
-    StartNetworkedParticleFxNonLoopedOnEntity(particleName, door, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, false, false, false)
+    -- local particleAsset = "core"
+    -- local particleName = "weap_smoke_grenade"
+    -- RequestNamedPtfxAsset(particleAsset)
+    -- while not HasNamedPtfxAssetLoaded(particleAsset) do
+    --     Citizen.Wait(1)
+    -- end
+    -- UseParticleFxAssetNextCall(particleAsset)
+    -- StartNetworkedParticleFxNonLoopedOnEntity(particleName, door, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, false, false, false)
 
-    local particleAsset2 = "des_fib_ceiling"
-    local particleName2 = "ent_ray_fbi5a_ceiling_debris"
-    RequestNamedPtfxAsset(particleAsset2)
-    while not HasNamedPtfxAssetLoaded(particleAsset2) do
-        Citizen.Wait(1)
-    end
-    UseParticleFxAssetNextCall(particleAsset2)
-    StartNetworkedParticleFxNonLoopedOnEntity(particleName2, door, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, false, false, false)
+    -- local particleAsset2 = "des_fib_ceiling"
+    -- local particleName2 = "ent_ray_fbi5a_ceiling_debris"
+    -- RequestNamedPtfxAsset(particleAsset2)
+    -- while not HasNamedPtfxAssetLoaded(particleAsset2) do
+    --     Citizen.Wait(1)
+    -- end
+    -- UseParticleFxAssetNextCall(particleAsset2)
+    -- StartNetworkedParticleFxNonLoopedOnEntity(particleName2, door, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, false, false, false)
 
-    SpawnCarts()
-    SpawnGoldCarts() -- thtowing errors
-    SpawnVaultDoor()
-    OpenVault()
-    SetEntityCollision(door, false, true)
+    --SpawnCarts()
+    --SpawnGoldCarts() -- thtowing errors
+    SpawnBrokenVault()
 end
 
 function StartGrabgold()

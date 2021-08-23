@@ -1,3 +1,16 @@
+CreateThread(function()
+    ajvault = CreateObject(`ch_prop_ch_vaultdoor01x`, Config.VaultDoors[1].x - 0.05, Config.VaultDoors[1].y + 1, Config.VaultDoors[1].z - 2.03, true, true, true)
+    SetEntityHeading(ajvault, 58.00)
+    FreezeEntityPosition(ajvault, true)
+end)
+
+RegisterServerEvent('qb-casinoheist:server:spawnvault')
+AddEventHandler('qb-casinoheist:server:spawnvault', function(type)
+    ajvault = CreateObject(`ch_prop_ch_vaultdoor01x`, Config.VaultDoors[1].x - 0.05, Config.VaultDoors[1].y + 1, Config.VaultDoors[1].z - 2.03, true, true, true)
+    SetEntityHeading(ajvault, 58.00)
+    FreezeEntityPosition(ajvault, true)
+end)
+
 RegisterServerEvent('qb-casinoheist:server:recieveLockerItem')
 AddEventHandler('qb-casinoheist:server:recieveLockerItem', function(type)
     local src = source
@@ -49,4 +62,17 @@ AddEventHandler('qb-casinoheist:server:callCops', function(type, safe, streetLab
     TriggerClientEvent("qb-casinoheist:client:robberyCall", -1, type, safe, streetLabel, coords)
     TriggerClientEvent("qb-phone:client:addPoliceAlert", -1, alertData)
     TriggerEvent('wf-alerts:svNotify', dispatchData)
+end)
+
+RegisterServerEvent('aj:sync')
+AddEventHandler('aj:sync', function(status)
+    print(status)
+    if status == true then
+        SetEntityHeading(ajvault, 58.00)
+        FreezeEntityPosition(ajvault, true)
+        print(ajvault)
+    elseif status == false then
+        print(ajvault)
+        FreezeEntityPosition(ajvault, false)
+    end
 end)
