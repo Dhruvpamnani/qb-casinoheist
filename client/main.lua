@@ -1,7 +1,6 @@
 Config = Config or {}
 local inRange = false
 local isLoggedIn = false
-local HeistStarted = false
 local Drilling = false
 
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
@@ -59,11 +58,15 @@ end
 
 CreateThread(function()
     TriggerServerEvent('qb-casinoheist:server:spawnvault')
-    SpawnPeds()  -- Not Ready for Use
+    --SpawnPeds()  -- Not Ready for Use
 end)
 
 RegisterCommand("fuckaj2", function()
     TriggerServerEvent('qb-casinoheist:server:spawnvault')
+end)
+
+RegisterCommand("uir", function()
+    isLoggedIn = true
 end)
 
 UseParticleFxAssetNextCall(particleAsset)
@@ -86,24 +89,18 @@ end
 
 CreateThread(function()
     while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        for i = 1, 3 do
-            local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
-            if dist < 1.5 then
-                local check = GetClosestObjectOfType(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 1.5, GetHashKey("hei_prop_hei_cash_trolly_01"), false, false, false)
-                local check2 = IsAnyObjectNearPoint(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, 1.0, true)
-                inRange = true
-                if check ~= 0 then
+        Wait(1)
+        if isLoggedIn and Config.VaultBomb[1].hit then
+            local ped = PlayerPedId()
+            local pos = GetEntityCoords(ped)
+            for i = 1, 3 do
+                local dist = #(pos - vector3(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z))
+                if dist < 1.5 and not Config.Trolleys[i].hit then
+                    inRange = true
                     DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '[~b~E~s~] Take')
                     if IsControlJustPressed(0, 38) then
                         StartGrab()
                     end
-                else
-                    if check2 then
-                        DrawText3Ds(Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z + 1, '~r~ Empty')
-                    end
                 end
             end
         end
@@ -112,24 +109,16 @@ end)
 
 CreateThread(function()
     while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        for i = 1, 1 do
-            local dist = #(pos - vector3(Config.GoldTrolleys[i].x, Config.GoldTrolleys[i].y, Config.GoldTrolleys[i].z))
-            if dist < 1.5 then
-                local check = GetClosestObjectOfType(Config.GoldTrolleys[i].x, Config.GoldTrolleys[i].y, Config.GoldTrolleys[i].z, 1.5, GetHashKey("ch_prop_gold_trolly_01a"), false, false, false)
-                local check2 = IsAnyObjectNearPoint(Config.GoldTrolleys[i].x, Config.GoldTrolleys[i].y, Config.GoldTrolleys[i].z, 1.0, true)
+        Wait(1)
+        if isLoggedIn and Config.VaultBomb[1].hit then
+            local ped = PlayerPedId()
+            local pos = GetEntityCoords(ped)
+            local dist = #(pos - vector3(Config.GoldTrolleys[1].x, Config.GoldTrolleys[1].y, Config.GoldTrolleys[1].z))
+            if dist < 1.5 and not Config.GoldTrolleys[1].hit then
                 inRange = true
-                if check ~= 0 then
-                    DrawText3Ds(Config.GoldTrolleys[i].x, Config.GoldTrolleys[i].y, Config.GoldTrolleys[i].z + 1, '[~b~E~s~] Take')
-                    if IsControlJustPressed(0, 38) then
-                        StartGrabgold()
-                    end
-                else
-                    if check2 then
-                        DrawText3Ds(Config.GoldTrolleys[i].x, Config.GoldTrolleys[i].y, Config.GoldTrolleys[i].z + 1, '~r~ Empty')
-                    end
+                DrawText3Ds(Config.GoldTrolleys[1].x, Config.GoldTrolleys[1].y, Config.GoldTrolleys[1].z + 1, '[~b~E~s~] Take')
+                if IsControlJustPressed(0, 38) then
+                    StartGrabgold()
                 end
             end
         end
@@ -138,35 +127,17 @@ end)
 
 CreateThread(function()
     while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        local dist = #(pos - vector3(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z))
-        if dist < 1 and Config.VaultBomb[1].hit == false then
-            inRange = true
-            DrawText3Ds(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z + 1, '[~b~E~s~] Hit')
-            if IsControlJustPressed(0, 38) then
-                Wait(500)
-                TriggerEvent('bomb:Usebomb')
-            end
-        end
-    end
-end)
-
-CreateThread(function()
-    while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        for i = 1, 4 do
-            local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-            if dist < 1 and not Drilling and not Config.DrillSpots[i].hit then
+        Wait(1)
+        if isLoggedIn then
+            local ped = PlayerPedId()
+            local pos = GetEntityCoords(ped)
+            local dist = #(pos - vector3(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z))
+            if dist < 1 and Config.VaultBomb[1].hit == false then
                 inRange = true
-                DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
-                print(closestDrill)
+                DrawText3Ds(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z + 1, '[~b~E~s~] Hit')
                 if IsControlJustPressed(0, 38) then
                     Wait(500)
-                    TriggerEvent('drill:Usedrill')
+                    TriggerEvent('bomb:Usebomb')
                 end
             end
         end
@@ -175,18 +146,42 @@ end)
 
 CreateThread(function()
     while true do
-        Wait(0)
-        local ped = PlayerPedId()
-        local pos = GetEntityCoords(ped)
-        for i = 1, 3 do  --Note: see if we can remove all the for loops and replace with the [closestKeypad] see line 278 for what im talking about
-            local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
-            if dist < 1 and not Config.KeycardDoors[i].isOpen then
-                DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '[~b~E~s~] Hack')
-                if IsControlJustPressed(0, 38) then
-                    TriggerEvent('security_card_02:Usesecurity_card_02')
+        Wait(1)
+        if isLoggedIn and Config.VaultBomb[1].hit then
+            local ped = PlayerPedId()
+            local pos = GetEntityCoords(ped)
+            for i = 1, 4 do
+                local dist = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
+                if dist < 1 and not Drilling and not Config.DrillSpots[i].hit then
+                    inRange = true
+                    DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
+                    print(closestDrill)
+                    if IsControlJustPressed(0, 38) then
+                        Wait(500)
+                        TriggerEvent('drill:Usedrill')
+                    end
                 end
-            elseif dist < 1 and Config.KeycardDoors[i].isOpen then
-                DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '~g~ Unlocked')
+            end
+        end
+    end
+end)
+
+CreateThread(function()
+    while true do
+        Wait(1)
+        if isLoggedIn then
+            local ped = PlayerPedId()
+            local pos = GetEntityCoords(ped)
+            for i = 1, 3 do 
+                local dist = #(pos - vector3(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z))
+                if dist < 1 and not Config.KeycardDoors[i].isOpen then
+                    DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '[~b~E~s~] Hack')
+                    if IsControlJustPressed(0, 38) then
+                        TriggerEvent('security_card_02:Usesecurity_card_02')
+                    end
+                elseif dist < 1 and Config.KeycardDoors[i].isOpen then
+                    DrawText3Ds(Config.KeycardDoors[i].x, Config.KeycardDoors[i].y, Config.KeycardDoors[i].z + 0.3, '~g~ Unlocked')
+                end
             end
         end
     end
@@ -212,6 +207,33 @@ Citizen.CreateThread(function()
             if not inRange then
                 Wait(2000)
                 closestDrill = nil
+            end
+        end
+
+        Wait(5)
+    end
+end)
+
+Citizen.CreateThread(function()
+    while true do
+        local ped = PlayerPedId()
+        local pos = GetEntityCoords(ped)
+        local dist
+
+        if QBCore ~= nil then
+            inRange = false
+
+            for k, v in pairs(Config.Trolleys) do
+                dist = #(pos - vector3(Config.Trolleys[k]["x"], Config.Trolleys[k]["y"], Config.Trolleys[k]["z"]))
+                if dist < 1.5 and Config.Trolleys[k].hit == false then
+                    closestTrolly = k
+                    inRange = true
+                end
+            end
+
+            if not inRange then
+                Wait(2000)
+                closestTrolly = nil
             end
         end
 
@@ -511,6 +533,7 @@ function StartGrab()
 	SetModelAsNoLongerNeeded(emptyobj)
     SetModelAsNoLongerNeeded(GetHashKey("ch_p_m_bag_var03_arm_s"))
     disableinput = false
+    Config.Trolleys[closestTrolly].hit = true
 end
 
 function IsWearingHandshoes()
@@ -534,25 +557,19 @@ function SpawnPeds()
     while not HasModelLoaded("mp_m_freemode_01") do
         Wait(5)
     end
-    RequestModel("u_m_m_streetart_01")
-    while not HasModelLoaded("u_m_m_streetart_01") do
-        Wait(5)
-    end
-    local doorguy = CreatePed(5, 'a_m_o_beach_02', 985.8, 80.64, 80.99, 328.00, true)
-    TaskStartScenarioInPlace(doorguy, "WORLD_HUMAN_HANG_OUT_STREET", 0, false)
     for k, v in pairs(Config.Peds) do
-        local Yew = CreatePed(5, 'mp_m_freemode_01', v.x, v.y, v.z, v.h, true)
+        local Yew = CreatePed(5, 'mp_m_freemode_01', v.x, v.y, v.z, v.h, true)  -- mp_m_freemode_01
         SetPedComponentVariation(Yew, 11, 317, 1, 0)
-        --SetPedComponentVariation(Yew, 3, 16, 0, 0)
+        SetPedComponentVariation(Yew, 3, 12, 0, 0)
         SetPedComponentVariation(Yew, 0, math.random(0,44), 0, 0)
         SetPedComponentVariation(Yew, 2, math.random(2, 15), math.random(1,5), 0)
-        SetPedComponentVariation(Yew, 8, 15, 0, 0)
+        SetPedComponentVariation(Yew, 8, 170, 0, 0)
         SetPedComponentVariation(Yew, 4, 10, 0, 0)
-        SetPedComponentVariation(Yew, 9, 2, 0, 0)
-        SetPedComponentVariation(Yew, 6, 25, 0, 0)
+        SetPedComponentVariation(Yew, 10, 71, 0, 0)
+        SetPedComponentVariation(Yew, 6, 24, 0, 0)
         SetPedComponentVariation(Yew, 13, 71, 0, 0)
         SetPedHelmet(Yew, true)
-        SetPedPropIndex(Yew, 0, 88, 0, true)
+        SetPedPropIndex(Yew, 0, 144, 0, true)
         SetPedArmour(Yew, 100)
         SetPedShootRate(Yew, 300)
         SetPedCombatAttributes(Yew, 46, true)
@@ -882,4 +899,5 @@ function StartGrabgold()
     SetModelAsNoLongerNeeded(emptyobj)
     SetModelAsNoLongerNeeded(GetHashKey("ch_p_m_bag_var03_arm_s"))
     disableinput = false
+    Config.GoldTrolleys[1].hit = true
 end
