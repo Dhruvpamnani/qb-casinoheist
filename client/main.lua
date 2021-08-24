@@ -6,11 +6,11 @@ local Busy = false
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
     isLoggedIn = true
-    MissionNotification()
+    --MissionNotification()
 end)
 
 RegisterNetEvent("QBCore:Client:OnPlayerUnload")
-AddEventHandler("QBCore:Client:OnPlayerUnload",function() 
+AddEventHandler("QBCore:Client:OnPlayerUnload",function()
     isLoggedIn = false
 end)
 
@@ -19,8 +19,6 @@ RegisterCommand("uir", function()
 end)
 
 function SpawnCarts()
-    local ped = PlayerPedId()
-    local pos = GetEntityCoords(ped)
     local model = "hei_prop_hei_cash_trolly_01"
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Wait(100) end
@@ -35,8 +33,6 @@ function SpawnCarts()
     end
 end
 function SpawnGoldCarts()
-    local ped = PlayerPedId()
-    local pos = GetEntityCoords(ped)
     local model = "ch_prop_gold_trolly_01a"
     RequestModel(model)
     while not HasModelLoaded(model) do RequestModel(model) Wait(100) end
@@ -61,7 +57,7 @@ end
 CreateThread(function()
     TriggerServerEvent('qb-casinoheist:server:spawnvault')
     TriggerServerEvent('aj:sync', true)
-    --SpawnPeds()  -- Not Ready for Use
+    SpawnPeds()  -- Not Ready for Use
 end)
 
 function DrawText3Ds(x, y, z, text)
@@ -105,7 +101,7 @@ CreateThread(function()
             end
             for i = 1, 4 do
                 local dist3 = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-                if dist3 < 1 and closestDrill ~= nil and not Busy and not Config.DrillSpots[i].hit then
+                if dist3 < 1 and closestDrill ~= nil and not Busy and not Config.DrillSpots[i].hit and Config.VaultBomb[1].hit then
                     inRange = true
                     DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
                     print(closestDrill)
@@ -185,7 +181,6 @@ end)
 RegisterNetEvent('security_card_02:Usesecurity_card_02')
 AddEventHandler('security_card_02:Usesecurity_card_02', function()
     local ped = PlayerPedId()
-    local pos = GetEntityCoords(ped)
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
             SetCurrentPedWeapon(ped, `WEAPON_UNARMED`, true)
@@ -598,12 +593,9 @@ function StartBombAnim(Config)
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
-    local animPos2 = GetAnimInitialOffsetPosition(animDict, "player_ig8_vault_explosive_enter", Config.VaultBomb[1].x + 0.3, Config.VaultBomb[1].y + 0, Config.VaultBomb[1].z + 1.1)
     local animPos3 = GetAnimInitialOffsetPosition(animDict, "player_ig8_vault_explosive_plant_a", Config.VaultBomb[1].x + 0.3, Config.VaultBomb[1].y + 0, Config.VaultBomb[1].z + 1.1)
     local animPos4 = GetAnimInitialOffsetPosition(animDict, "player_ig8_vault_explosive_plant_b", Config.VaultBomb[1].x + 0.3, Config.VaultBomb[1].y + 0, Config.VaultBomb[1].z + 1.1)
     local animPos5 = GetAnimInitialOffsetPosition(animDict, "player_ig8_vault_explosive_plant_c", Config.VaultBomb[1].x + 0.3, Config.VaultBomb[1].y + 0, Config.VaultBomb[1].z + 1.1)
-    FreezeEntityPosition(ped, true)
-    local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, false, true, 1065353216, 0, 0.9)
     local bag = CreateObject(`ch_p_m_bag_var03_arm_s`, targetPosition, 1, 1, 0)
     local bomb = CreateObject(`ch_prop_ch_explosive_01a`, targetPosition, 1, 1, 0)
     local bomb2 = CreateObject(`ch_prop_ch_explosive_01a`, targetPosition, 1, 1, 0)
@@ -612,10 +604,8 @@ function StartBombAnim(Config)
     SetEntityVisible(bomb2, false)
     SetEntityVisible(bomb3, false)
     SetEntityVisible(bomb4, false)
-    local netScene2 = NetworkCreateSynchronisedScene(animPos2, targetRotation, 2, true, false, 1065353216, 0, 0.8)
-    NetworkAddPedToSynchronisedScene(ped, netScene2, animDict, "player_ig8_vault_explosive_enter", 0, 0, 10, 16, 1148846080, 0)
-    NetworkAddEntityToSynchronisedScene(bag, netScene2, animDict, "bag_ig8_vault_explosive_enter", 4.0, -80.0, 1)
-    NetworkAddEntityToSynchronisedScene(bomb, netScene2, animDict, "semtex_a_ig8_vault_explosive_enter", 4.0, -80.0, 1)
+    FreezeEntityPosition(ped, true)
+    SetPedComponentVariation(ped, 5, 0, 0, 0)
     local netScene3 = NetworkCreateSynchronisedScene(animPos3, targetRotation, 2, true, false, 1065353216, 0, 0.8)
     NetworkAddPedToSynchronisedScene(ped, netScene3, animDict, "player_ig8_vault_explosive_plant_a", 0, 0, 10, 1, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene3, animDict, "bag_ig8_vault_explosive_plant_a", 4.0, -80.0, 1)
@@ -628,12 +618,9 @@ function StartBombAnim(Config)
     NetworkAddPedToSynchronisedScene(ped, netScene5, animDict, "player_ig8_vault_explosive_plant_c", 0, 0, 10, 16, 1148846080, 0)
     NetworkAddEntityToSynchronisedScene(bag, netScene5, animDict, "bag_ig8_vault_explosive_plant_c", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(bomb4, netScene5, animDict, "semtex_c_ig8_vault_explosive_plant_c", 4.0, -80.0, 1)
-    SetPedComponentVariation(ped, 5, 0, 0, 0)
     BombCam(true)
-    --NetworkStartSynchronisedScene(netScene2)
     DeleteObject(bomb)
     SetEntityVisible(bomb2, true)
-    --NetworkStopSynchronisedScene(netScene2)
     NetworkStartSynchronisedScene(netScene3)
     Wait(3500)
     SetEntityVisible(bomb3, true)

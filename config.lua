@@ -2,7 +2,7 @@ Config = {}
 
 Config.MinimumPolice = 0
 
-Config.BombTime = 3
+Config.BombTime = 30
 
 Config.HackTime = 30
 
@@ -10,7 +10,7 @@ Config.MarkedBagMin = 1
 
 Config.MarkedBagMax = 5
 
-Config.MarkedMin = 1000 
+Config.MarkedMin = 1000
 
 Config.MarkedMax = 2000
 
