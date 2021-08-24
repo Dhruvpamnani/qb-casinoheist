@@ -9,12 +9,11 @@ RegisterServerEvent('qb-casinoheist:server:recieveLockerItem')
 AddEventHandler('qb-casinoheist:server:recieveLockerItem', function(type)
     local src = source
     local ply = QBCore.Functions.GetPlayer(src)
-    ply.Functions.AddItem('10kgoldchain', math.random(1,8))
+    ply.Functions.AddItem('10kgoldchain', math.random(1,5))
     TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['10kgoldchain'], "add")
     chance = math.random(1, 10)
-    print(chance)
     if chance == 2 then
-        ply.Functions.AddItem('diamond_ring', math.random(1,5))
+        ply.Functions.AddItem('diamond_ring', math.random(1,3))
         TriggerClientEvent('inventory:client:ItemBox', src, QBCore.Shared.Items['diamond_ring'], "add")
     end
 end)

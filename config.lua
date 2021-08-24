@@ -122,6 +122,8 @@ Config.DrillSpots = {
         x = 996.28,
         y = 69.24,
         z = 59.83,
+        animx =  996.28 + 0.1,
+        animy = 69.24 + 1.2,
         hit = false
 
     },
@@ -129,18 +131,24 @@ Config.DrillSpots = {
         x = 1000.96,
         y = 66.72,
         z = 59.83,
+        animx = 1000.96 + 0.1,
+        animy = 66.72 + 1.2,
         hit = false
     },
     [3] = {
         x = 1008.76,
         y = 45.78,
         z = 59.83,
+        animx = 1008.76 + 0.3,
+        animy = 45.78 + 0.7,
         hit = false
     },
     [4] = {
         x = 1005.47,
         y = 38.64,
         z = 59.83,
+        animx = 1005.47 + 0.3,
+        animy = 38.64 + 0.7,
         hit = false
     }
 }

@@ -1,7 +1,7 @@
 Config = Config or {}
 local inRange = false
 local isLoggedIn = false
-local Drilling = false
+local Busy = false
 
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
@@ -105,7 +105,7 @@ CreateThread(function()
             end
             for i = 1, 4 do
                 local dist3 = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-                if dist3 < 1 and closestDrill ~= nil and not Drilling and not Config.DrillSpots[i].hit then
+                if dist3 < 1 and closestDrill ~= nil and not Busy and not Config.DrillSpots[i].hit then
                     inRange = true
                     DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
                     print(closestDrill)
@@ -191,7 +191,7 @@ AddEventHandler('security_card_02:Usesecurity_card_02', function()
             SetCurrentPedWeapon(ped, `WEAPON_UNARMED`, true)
             Wait(2000)
             TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["security_card_02"], "remove")
-            --TriggerServerEvent("QBCore:Server:RemoveItem", "security_card_02", 1)
+            TriggerServerEvent("QBCore:Server:RemoveItem", "security_card_02", 1)
             SetEntityHeading(ped, Config.KeycardDoors[closestKeypad].h)
             StartHackAnim(Config)
         else
@@ -209,16 +209,16 @@ AddEventHandler('drill:Usedrill', function()
     end
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
-            Drilling = true
+            Busy = true
             SetCurrentPedWeapon(ped, `WEAPON_UNARMED`, true)
             Wait(2000)
             StartDrillAnim(Config)
             StartDrillAnim2(Config)
             Config.DrillSpots[closestDrill].hit = true
             TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["drill"], "remove")
-            --TriggerServerEvent("QBCore:Server:RemoveItem", "drill", 1)
+            TriggerServerEvent("QBCore:Server:RemoveItem", "drill", 1)
             TriggerServerEvent('qb-casinoheist:server:recieveLockerItem')
-            Drilling = false
+            Busy = false
         else
             QBCore.Functions.Notify('You do not have the required items!', "error")
         end
@@ -494,9 +494,9 @@ function StartDrillAnim(Config)
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
-    local animPos = GetAnimInitialOffsetPosition(animDict, "enter", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
-    local animPos2 = GetAnimInitialOffsetPosition(animDict, "idle", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
-    local animPos3 = GetAnimInitialOffsetPosition(animDict, "exit", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
+    local animPos = GetAnimInitialOffsetPosition(animDict, "enter", Config.DrillSpots[closestDrill].animx, Config.DrillSpots[closestDrill].animy, Config.DrillSpots[closestDrill].z - 2)
+    local animPos2 = GetAnimInitialOffsetPosition(animDict, "idle", Config.DrillSpots[closestDrill].animx, Config.DrillSpots[closestDrill].animy, Config.DrillSpots[closestDrill].z - 2)
+    local animPos3 = GetAnimInitialOffsetPosition(animDict, "exit", Config.DrillSpots[closestDrill].animx, Config.DrillSpots[closestDrill].animy, Config.DrillSpots[closestDrill].z - 2)
     FreezeEntityPosition(ped, true)
     local netScene = NetworkCreateSynchronisedScene(animPos, targetRotation, 0, true, true, 1065353216, 0, 1.0)
     NetworkAddPedToSynchronisedScene(ped, netScene, animDict, "enter", 1.5, -4.0, 1, 16, 1148846080, 0)
@@ -549,9 +549,9 @@ function StartDrillAnim2(Config)
     end
     local ped = PlayerPedId()
     local targetPosition, targetRotation = (vec3(GetEntityCoords(ped))), vec3(GetEntityRotation(ped))
-    local animPos = GetAnimInitialOffsetPosition(animDict, "enter", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
-    local animPos2 = GetAnimInitialOffsetPosition(animDict, "idle", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
-    local animPos3 = GetAnimInitialOffsetPosition(animDict, "exit", Config.DrillSpots[closestDrill].x + 0.1, Config.DrillSpots[closestDrill].y + 1.2, Config.DrillSpots[closestDrill].z - 2)
+    local animPos = GetAnimInitialOffsetPosition(animDict, "enter", Config.DrillSpots[closestDrill].animx, Config.DrillSpots[closestDrill].animy, Config.DrillSpots[closestDrill].z - 2)
+    local animPos2 = GetAnimInitialOffsetPosition(animDict, "idle", Config.DrillSpots[closestDrill].animx, Config.DrillSpots[closestDrill].animy, Config.DrillSpots[closestDrill].z - 2)
+    local animPos3 = GetAnimInitialOffsetPosition(animDict, "exit", Config.DrillSpots[closestDrill].animx, Config.DrillSpots[closestDrill].animy, Config.DrillSpots[closestDrill].z - 2)
     FreezeEntityPosition(ped, true)
     local bag = CreateObject(`ch_p_m_bag_var03_arm_s`, targetPosition, 1, 1, 0)
     local drill = CreateObject(`ch_prop_vault_drill_01a`, targetPosition, 1, 1, 0)
@@ -631,7 +631,6 @@ function StartBombAnim(Config)
     SetPedComponentVariation(ped, 5, 0, 0, 0)
     BombCam(true)
     --NetworkStartSynchronisedScene(netScene2)
-    --Wait(1200)
     DeleteObject(bomb)
     SetEntityVisible(bomb2, true)
     --NetworkStopSynchronisedScene(netScene2)
@@ -651,7 +650,7 @@ function StartBombAnim(Config)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
     BombCam(false)
     TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["weapon_pipebomb"], "remove")
-    --TriggerServerEvent("QBCore:Server:RemoveItem", "weapon_pipebomb", 1)
+    TriggerServerEvent("QBCore:Server:RemoveItem", "weapon_pipebomb", 1)
     QBCore.Functions.Notify('The bomb will go off in ' ..Config.BombTime.. ' seconds.', "error")
     Wait(Config.BombTime * 1000)
     AddExplosion(Config.VaultBomb[1].x, Config.VaultBomb[1].y, Config.VaultBomb[1].z, 82, 5.0, true, false, 15.0)
@@ -846,13 +845,13 @@ end
 -- 	if (not flag1) then
 -- 		RequestCutscene(cut, 8)
 -- 	else
--- 		RequestCutsceneEx(cut, flag1, flag2)
+-- 		RequestCutsceneWithPlaybackList(cut, flag1, flag2)
 -- 	end
 -- 	while (not HasThisCutsceneLoaded(cut)) do Wait(0) end
 -- 	return
 -- end
 
--- local function BeginCutsceneWithPlayer()
+-- function BeginCutsceneWithPlayer()
 --     pos = GetEntityCoords(PlayerPedId())
 -- 	local plyrId = PlayerPedId()
 -- 	local playerClone = ClonePed_2(plyrId, 0.0, false, true, 1)
@@ -896,10 +895,10 @@ end
 -- 	RegisterEntityForCutscene(ped1, 'MP_2', 0, 0, 64)
 
 -- 	SetCutsceneEntityStreamingFlags('MP_3', 0, 1)
--- 	RegisterEntityForCutscene(ped2, 'MP_3', 0, 0, 64)  -- 0 = enabled / 3 = false?
+-- 	RegisterEntityForCutscene(ped2, 'MP_3', 3, 0, 64)  -- 0 = enabled / 3 = false?
 
 -- 	SetCutsceneEntityStreamingFlags('MP_4', 0, 1)
--- 	RegisterEntityForCutscene(ped3, 'MP_4', 0, 0, 64)
+-- 	RegisterEntityForCutscene(ped3, 'MP_4', 3, 0, 64)
 
 -- 	Wait(10)
 -- 	StartCutscene(0)
@@ -918,15 +917,17 @@ end
 
 -- CreateThread(function()
 --     while true do
---         Wait(0)
---         local ped = PlayerPedId()
---         local pos = GetEntityCoords(ped)
---         local dist = #(pos - vector3(1047.69, -727.03, 57.26))
---         if dist < 1.5 then
---             LoadCutscene('hs3_int')
---             BeginCutsceneWithPlayer()
---             dist = 10
---             RemoveCutscene()
+--         Wait(5)
+--         if isLoggedIn and not Config.KeycardDoors[1].isOpen then
+--             local ped = PlayerPedId()
+--             local pos = GetEntityCoords(ped)
+--             local dist = #(pos - vector3(1047.69, -727.03, 57.26))
+--             if dist < 1.5 then
+--                 --LoadCutscene('hs3_int', 0x105, 8)
+--                 LoadCutscene('hs3_int')
+--                 BeginCutsceneWithPlayer()
+--                 RemoveCutscene()
+--             end
 --         end
 --     end
 -- end)
