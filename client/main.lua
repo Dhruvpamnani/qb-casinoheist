@@ -57,7 +57,7 @@ end
 CreateThread(function()
     TriggerServerEvent('qb-casinoheist:server:spawnvault')
     TriggerServerEvent('aj:sync', true)
-    SpawnPeds()  -- Not Ready for Use
+    --SpawnPeds()  -- Not Ready for Use
 end)
 
 function DrawText3Ds(x, y, z, text)
@@ -205,10 +205,12 @@ AddEventHandler('drill:Usedrill', function()
     QBCore.Functions.TriggerCallback('QBCore:HasItem', function(result)
         if result then
             Busy = true
+            LocalPlayer.state:set("inv_busy", true, true)
             SetCurrentPedWeapon(ped, `WEAPON_UNARMED`, true)
             Wait(2000)
             StartDrillAnim(Config)
             StartDrillAnim2(Config)
+            LocalPlayer.state:set("inv_busy", false, true)
             Config.DrillSpots[closestDrill].hit = true
             TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["drill"], "remove")
             TriggerServerEvent("QBCore:Server:RemoveItem", "drill", 1)
@@ -324,7 +326,7 @@ function OnHackDone(success, timeremaining)
 end
 
 function StartGrab()
-    disableinput = true
+    LocalPlayer.state:set("inv_busy", true, true)
     local ped = PlayerPedId()
     local model = "hei_prop_heist_cash_pile"
 
@@ -420,7 +422,7 @@ function StartGrab()
 	RemoveAnimDict("anim@heists@ornate_bank@grab_cash")
 	SetModelAsNoLongerNeeded(emptyobj)
     SetModelAsNoLongerNeeded(`ch_p_m_bag_var03_arm_s`)
-    disableinput = false
+    LocalPlayer.state:set("inv_busy", false, true)
     Config.Trolleys[closestTrolly].hit = true
 end
 
@@ -564,6 +566,7 @@ function StartDrillAnim2(Config)
     NetworkAddEntityToSynchronisedScene(drill, netScene3, animDict, "exit_ch_prop_vault_drill_01a", 4.0, -8.0, 1)
     SetPedComponentVariation(ped, 5, 0, 0, 0)
     SetEntityHeading(ped, 63.60)
+    LocalPlayer.state:set("inv_busy", true, true)
     NetworkStartSynchronisedScene(netScene2)
     Wait(7000)
     NetworkStopSynchronisedScene(netScene2)
@@ -577,6 +580,7 @@ function StartDrillAnim2(Config)
     DeleteObject(drill)
     DeleteObject(card)
     FreezeEntityPosition(ped, false)
+    LocalPlayer.state:set("inv_busy", false, true)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
 end
 
@@ -619,6 +623,7 @@ function StartBombAnim(Config)
     NetworkAddEntityToSynchronisedScene(bag, netScene5, animDict, "bag_ig8_vault_explosive_plant_c", 4.0, -80.0, 1)
     NetworkAddEntityToSynchronisedScene(bomb4, netScene5, animDict, "semtex_c_ig8_vault_explosive_plant_c", 4.0, -80.0, 1)
     BombCam(true)
+    LocalPlayer.state:set("inv_busy", true, true)
     DeleteObject(bomb)
     SetEntityVisible(bomb2, true)
     NetworkStartSynchronisedScene(netScene3)
@@ -636,6 +641,7 @@ function StartBombAnim(Config)
     FreezeEntityPosition(ped, false)
     SetPedComponentVariation(ped, 5, 82, 3, 0)
     BombCam(false)
+    LocalPlayer.state:set("inv_busy", false, true)
     TriggerEvent('inventory:client:ItemBox', QBCore.Shared.Items["weapon_pipebomb"], "remove")
     TriggerServerEvent("QBCore:Server:RemoveItem", "weapon_pipebomb", 1)
     QBCore.Functions.Notify('The bomb will go off in ' ..Config.BombTime.. ' seconds.', "error")
@@ -655,7 +661,7 @@ function StartBombAnim(Config)
 end
 
 function StartGrabgold()
-    disableinput = true
+    LocalPlayer.state:set("inv_busy", true, true)    local ped = PlayerPedId()
     local ped = PlayerPedId()
     local model = "ch_prop_gold_bar_01a"
     Trolley = GetClosestObjectOfType(GetEntityCoords(ped), 1.0, `ch_prop_gold_trolly_01a`, false, false,false)
@@ -742,7 +748,7 @@ function StartGrabgold()
     RemoveAnimDict("anim@heists@ornate_bank@grab_cash")
     SetModelAsNoLongerNeeded(emptyobj)
     SetModelAsNoLongerNeeded(`ch_p_m_bag_var03_arm_s`)
-    disableinput = false
+    LocalPlayer.state:set("inv_busy", false, true)
     Config.GoldTrolleys[1].hit = true
 end
 
