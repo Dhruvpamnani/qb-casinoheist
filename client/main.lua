@@ -2,6 +2,7 @@ Config = Config or {}
 local inRange = false
 local isLoggedIn = false
 local Busy = false
+local HeistStarted = false
 
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
@@ -18,6 +19,10 @@ RegisterCommand("uir", function()
     isLoggedIn = true
 end)
 
+RegisterCommand("ajheist", function()
+    HeistStarted = true
+end)
+
 function SpawnCarts()
     local model = "hei_prop_hei_cash_trolly_01"
     RequestModel(model)
@@ -29,7 +34,7 @@ function SpawnCarts()
             DeleteObject(obj)
             Wait(1)
         end
-        local cart = CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false)
+        CreateObject(model, Config.Trolleys[i].x, Config.Trolleys[i].y, Config.Trolleys[i].z, true, true, false)
     end
 end
 function SpawnGoldCarts()
@@ -43,7 +48,7 @@ function SpawnGoldCarts()
             DeleteObject(obj)
             Wait(1)
         end
-        local cart = CreateObject(model, Config.GoldTrolleys[i].x, Config.GoldTrolleys[i].y, Config.GoldTrolleys[i].z, true, true, false)
+        CreateObject(model, Config.GoldTrolleys[i].x, Config.GoldTrolleys[i].y, Config.GoldTrolleys[i].z, true, true, false)
     end
 end
 function SpawnBrokenVault()
@@ -78,7 +83,7 @@ end
 CreateThread(function()
     while true do
         Wait(1)
-        if isLoggedIn then
+        if isLoggedIn and HeistStarted then
             local ped = PlayerPedId()
             local pos = GetEntityCoords(ped)
             for i = 1, 3 do 
@@ -834,96 +839,108 @@ end
 --     DeleteObject(bomb)
 -- end
 
--- function LoadCutscene(cut, flag1, flag2)
--- 	if (not flag1) then
--- 		RequestCutscene(cut, 8)
--- 	else
--- 		RequestCutsceneWithPlaybackList(cut, flag1, flag2)
--- 	end
--- 	while (not HasThisCutsceneLoaded(cut)) do Wait(0) end
--- 	return
--- end
+function LoadCutscene(cut, flag1, flag2)
+	if (not flag1) then
+		RequestCutscene(cut, 8)
+	else
+		RequestCutsceneWithPlaybackList(cut, flag1, flag2)
+	end
+	while (not HasThisCutsceneLoaded(cut)) do Wait(0) end
+	return
+end
 
--- function BeginCutsceneWithPlayer()
---     pos = GetEntityCoords(PlayerPedId())
--- 	local plyrId = PlayerPedId()
--- 	local playerClone = ClonePed_2(plyrId, 0.0, false, true, 1)
+function BeginCutsceneWithPlayer()
+    pos = GetEntityCoords(PlayerPedId())
+	local plyrId = PlayerPedId()
+	local playerClone = ClonePed_2(plyrId, 0.0, false, true, 1)
 
---     SetBlockingOfNonTemporaryEvents(playerClone, true)
--- 	SetEntityVisible(playerClone, false, false)
--- 	SetEntityInvincible(playerClone, true)
--- 	SetEntityCollision(playerClone, false, false)
--- 	FreezeEntityPosition(playerClone, true)
--- 	SetPedHelmet(playerClone, false)
--- 	RemovePedHelmet(playerClone, true)
+    SetBlockingOfNonTemporaryEvents(playerClone, true)
+	SetEntityVisible(playerClone, false, false)
+	SetEntityInvincible(playerClone, true)
+	SetEntityCollision(playerClone, false, false)
+	FreezeEntityPosition(playerClone, true)
+	SetPedHelmet(playerClone, false)
+	RemovePedHelmet(playerClone, true)
 
---     local model1 = GetHashKey("s_m_y_dealer_01")
---     RequestModel(model1)
---     while not HasModelLoaded(model1) do
---         RequestModel(model1)
---         Citizen.Wait(0)
---     end
---     local ped1 = CreatePed(7, model1, x, y ,z, 0.0, true, true)
+    -- local model1 = GetHashKey("s_m_y_dealer_01") -- Not Used but may be needed later on
+    -- RequestModel(model1)
+    -- while not HasModelLoaded(model1) do
+    --     RequestModel(model1)
+    --     Citizen.Wait(0)
+    -- end
+    -- local ped1 = CreatePed(7, model1, x, y ,z, 0.0, true, true)
 
---     local model2 = GetHashKey("s_m_y_dealer_01")
---     RequestModel(model2)
---     while not HasModelLoaded(model2) do
---         RequestModel(model2)
---         Citizen.Wait(0)
---     end
---     local ped2 = CreatePed(7, model2, x, y ,z, 0.0, true, true)
+    -- local model2 = GetHashKey("s_m_y_dealer_01")
+    -- RequestModel(model2)
+    -- while not HasModelLoaded(model2) do
+    --     RequestModel(model2)
+    --     Citizen.Wait(0)
+    -- end
+    -- local ped2 = CreatePed(7, model2, x, y ,z, 0.0, true, true)
 
---     local model3 = GetHashKey("s_m_y_dealer_01")
---     RequestModel(model3)
---     while not HasModelLoaded(model3) do
---         RequestModel(model3)
---         Citizen.Wait(0)
---     end
---     local ped3 = CreatePed(7, model3, x, y ,z, 0.0, true, true)
+    -- local model3 = GetHashKey("s_m_y_dealer_01")
+    -- RequestModel(model3)
+    -- while not HasModelLoaded(model3) do
+    --     RequestModel(model3)
+    --     Citizen.Wait(0)
+    -- end
+    -- local ped3 = CreatePed(7, model3, x, y ,z, 0.0, true, true)
 	
--- 	SetCutsceneEntityStreamingFlags('MP_1', 0, 1)
--- 	RegisterEntityForCutscene(plyrId, 'MP_1', 0, 0, 64)
+	SetCutsceneEntityStreamingFlags('MP_1', 0, 1)
+	RegisterEntityForCutscene(plyrId, 'MP_1', 0, 0, 64)
 
--- 	SetCutsceneEntityStreamingFlags('MP_2', 0, 1)
--- 	RegisterEntityForCutscene(ped1, 'MP_2', 0, 0, 64)
+	SetCutsceneEntityStreamingFlags('MP_2', 0, 1)
+	RegisterEntityForCutscene(ped1, 'MP_2', 0, 0, 64)
 
--- 	SetCutsceneEntityStreamingFlags('MP_3', 0, 1)
--- 	RegisterEntityForCutscene(ped2, 'MP_3', 3, 0, 64)  -- 0 = enabled / 3 = false?
+	SetCutsceneEntityStreamingFlags('MP_3', 0, 1)
+	RegisterEntityForCutscene(ped2, 'MP_3', 3, 0, 64)  -- 0 = enabled / 3 = false?
 
--- 	SetCutsceneEntityStreamingFlags('MP_4', 0, 1)
--- 	RegisterEntityForCutscene(ped3, 'MP_4', 3, 0, 64)
+	SetCutsceneEntityStreamingFlags('MP_4', 0, 1)
+	RegisterEntityForCutscene(ped3, 'MP_4', 3, 0, 64)
 
--- 	Wait(10)
--- 	StartCutscene(0)
---     --StartCutsceneAtCoords(pos[1], pos[2], pos[3] - 0.5, 0)
--- 	Wait(10)
--- 	ClonePedToTarget(playerClone, plyrId)
--- 	Wait(10)
--- 	DeleteEntity(playerClone)
---     Wait(15000)
---     DeleteEntity(ped1)
---     DeleteEntity(ped2)
---     DeleteEntity(ped3)
+	Wait(10)
+	StartCutscene(0)
+    --StartCutsceneAtCoords(pos[1], pos[2], pos[3] - 0.5, 0)
+	Wait(10)
+	ClonePedToTarget(playerClone, plyrId)
+	Wait(10)
+	DeleteEntity(playerClone)
+    -- Wait(15000)
+    -- DeleteEntity(ped1)
+    -- DeleteEntity(ped2)
+    -- DeleteEntity(ped3)
   
--- 	return playerClone
--- end
+	return playerClone
+end
 
--- CreateThread(function()
---     while true do
---         Wait(5)
---         if isLoggedIn and not Config.KeycardDoors[1].isOpen then
---             local ped = PlayerPedId()
---             local pos = GetEntityCoords(ped)
---             local dist = #(pos - vector3(1047.69, -727.03, 57.26))
---             if dist < 1.5 then
---                 --LoadCutscene('hs3_int', 0x105, 8)
---                 LoadCutscene('hs3_int')
---                 BeginCutsceneWithPlayer()
---                 RemoveCutscene()
---             end
---         end
---     end
--- end)
+CreateThread(function()
+    while true do
+        Wait(5)
+        if isLoggedIn and not HeistStarted then
+            local ped = PlayerPedId()
+            local pos = GetEntityCoords(ped)
+            local dist = #(pos - vector3(1047.69, -727.03, 57.26))
+            if dist < 3 and not HeistStarted then
+                QBCore.Functions.TriggerCallback('qb-casinoheist:server:getCops', function(cops)
+                    if cops >= Config.MinimumPolice then
+                        LocalPlayer.state:set("inv_busy", true, true)
+                        --LoadCutscene('hs3_int', 0x105, 8)
+                        LoadCutscene('hs3_int')
+                        BeginCutsceneWithPlayer()
+                        Wait(194400)  -- Needs to be tweaked a tad but good enough for now
+                        RemoveCutscene()
+                        HeistStarted = true
+                        LocalPlayer.state:set("inv_busy", false, true)
+                        print(HeistStarted)
+                    else
+                        QBCore.Functions.Notify("Not Enough Cops on", "error")
+                    end
+                end)
+                Wait(3000)
+            end
+        end
+    end
+end)
 
 -- function MissionNotification()
 -- 	Citizen.Wait(2000)
@@ -935,7 +952,7 @@ end
 -- 	Citizen.Wait(3000)
 -- end
 
--- CreateThread(function()
+-- CreateThread(function()  -- My plan for this is this will delay the Police Alert
 --     while true do
 --         Wait(0)
 --         local ped = PlayerPedId()

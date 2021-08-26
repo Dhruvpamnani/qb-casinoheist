@@ -1,6 +1,6 @@
 Config = {}
 
-Config.MinimumPolice = 0
+Config.MinimumPolice = 1
 
 Config.BombTime = 30
 

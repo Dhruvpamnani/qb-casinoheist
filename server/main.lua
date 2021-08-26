@@ -5,6 +5,19 @@ AddEventHandler('qb-casinoheist:server:spawnvault', function(type)
     FreezeEntityPosition(ajvault, true)
 end)
 
+QBCore.Functions.CreateCallback('qb-casinoheist:server:getCops', function(source, cb)
+	local cops = 0
+    for k, v in pairs(QBCore.Functions.GetPlayers()) do
+        local Player = QBCore.Functions.GetPlayer(v)
+        if Player ~= nil then 
+            if (Player.PlayerData.job.name == "police" and Player.PlayerData.job.onduty) then
+                cops = cops + 1
+            end
+        end
+	end
+	cb(cops)
+end)
+
 RegisterServerEvent('qb-casinoheist:server:recieveLockerItem')
 AddEventHandler('qb-casinoheist:server:recieveLockerItem', function(type)
     local src = source
