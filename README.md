@@ -1,6 +1,4 @@
-# qb-casinoheist [WIP]
-
-### **Not fully done! Just posting if people want to test it out or help out!**
+# qb-casinoheist
 
 ## Credit
 
@@ -16,7 +14,7 @@ googleoblivion#1337
  * [mhacking](https://forum.cfx.re/t/release-simple-hacking-minigame/62095)
 
  ## How to Start it
- 1. Go to 1047.69, -727.03, 57.26 and start the Cutscene (make sure your logged in)
+ 1. Go to the casino
  2. Hack the doors
  3. Blow up the vault
  4. Drill, Grab Cash. Grab Gold

@@ -2,12 +2,11 @@ Config = Config or {}
 local inRange = false
 local isLoggedIn = false
 local Busy = false
-local HeistStarted = false
+local HeistStarted = true
 
 RegisterNetEvent("QBCore:Client:OnPlayerLoaded")
 AddEventHandler("QBCore:Client:OnPlayerLoaded", function()
     isLoggedIn = true
-    --MissionNotification()
 end)
 
 RegisterNetEvent("QBCore:Client:OnPlayerUnload")
@@ -106,7 +105,7 @@ CreateThread(function()
             end
             for i = 1, 4 do
                 local dist3 = #(pos - vector3(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z))
-                if dist3 < 1 and closestDrill ~= nil and not Busy and not Config.DrillSpots[i].hit and Config.VaultBomb[1].hit then
+                if dist3 < 1 and not Busy and not Config.DrillSpots[i].hit and Config.VaultBomb[1].hit then
                     inRange = true
                     DrawText3Ds(Config.DrillSpots[i].x, Config.DrillSpots[i].y, Config.DrillSpots[i].z + 0.2, '[~b~E~s~] Drill')
                     print(closestDrill)
@@ -839,28 +838,28 @@ end
 --     DeleteObject(bomb)
 -- end
 
-function LoadCutscene(cut, flag1, flag2)
-	if (not flag1) then
-		RequestCutscene(cut, 8)
-	else
-		RequestCutsceneWithPlaybackList(cut, flag1, flag2)
-	end
-	while (not HasThisCutsceneLoaded(cut)) do Wait(0) end
-	return
-end
+-- function LoadCutscene(cut, flag1, flag2)
+-- 	if (not flag1) then
+-- 		RequestCutscene(cut, 8)
+-- 	else
+-- 		RequestCutsceneWithPlaybackList(cut, flag1, flag2)
+-- 	end
+-- 	while (not HasThisCutsceneLoaded(cut)) do Wait(0) end
+-- 	return
+-- end
 
-function BeginCutsceneWithPlayer()
-    pos = GetEntityCoords(PlayerPedId())
-	local plyrId = PlayerPedId()
-	local playerClone = ClonePed_2(plyrId, 0.0, false, true, 1)
+-- function BeginCutsceneWithPlayer()
+--     pos = GetEntityCoords(PlayerPedId())
+-- 	local plyrId = PlayerPedId()
+-- 	local playerClone = ClonePed_2(plyrId, 0.0, false, true, 1)
 
-    SetBlockingOfNonTemporaryEvents(playerClone, true)
-	SetEntityVisible(playerClone, false, false)
-	SetEntityInvincible(playerClone, true)
-	SetEntityCollision(playerClone, false, false)
-	FreezeEntityPosition(playerClone, true)
-	SetPedHelmet(playerClone, false)
-	RemovePedHelmet(playerClone, true)
+--     SetBlockingOfNonTemporaryEvents(playerClone, true)
+-- 	SetEntityVisible(playerClone, false, false)
+-- 	SetEntityInvincible(playerClone, true)
+-- 	SetEntityCollision(playerClone, false, false)
+-- 	FreezeEntityPosition(playerClone, true)
+-- 	SetPedHelmet(playerClone, false)
+-- 	RemovePedHelmet(playerClone, true)
 
     -- local model1 = GetHashKey("s_m_y_dealer_01") -- Not Used but may be needed later on
     -- RequestModel(model1)
@@ -886,61 +885,61 @@ function BeginCutsceneWithPlayer()
     -- end
     -- local ped3 = CreatePed(7, model3, x, y ,z, 0.0, true, true)
 	
-	SetCutsceneEntityStreamingFlags('MP_1', 0, 1)
-	RegisterEntityForCutscene(plyrId, 'MP_1', 0, 0, 64)
+-- 	SetCutsceneEntityStreamingFlags('MP_1', 0, 1)
+-- 	RegisterEntityForCutscene(plyrId, 'MP_1', 0, 0, 64)
 
-	SetCutsceneEntityStreamingFlags('MP_2', 0, 1)
-	RegisterEntityForCutscene(ped1, 'MP_2', 0, 0, 64)
+-- 	SetCutsceneEntityStreamingFlags('MP_2', 0, 1)
+-- 	RegisterEntityForCutscene(ped1, 'MP_2', 0, 0, 64)
 
-	SetCutsceneEntityStreamingFlags('MP_3', 0, 1)
-	RegisterEntityForCutscene(ped2, 'MP_3', 3, 0, 64)  -- 0 = enabled / 3 = false?
+-- 	SetCutsceneEntityStreamingFlags('MP_3', 0, 1)
+-- 	RegisterEntityForCutscene(ped2, 'MP_3', 3, 0, 64)  -- 0 = enabled / 3 = false?
 
-	SetCutsceneEntityStreamingFlags('MP_4', 0, 1)
-	RegisterEntityForCutscene(ped3, 'MP_4', 3, 0, 64)
+-- 	SetCutsceneEntityStreamingFlags('MP_4', 0, 1)
+-- 	RegisterEntityForCutscene(ped3, 'MP_4', 3, 0, 64)
 
-	Wait(10)
-	StartCutscene(0)
-    --StartCutsceneAtCoords(pos[1], pos[2], pos[3] - 0.5, 0)
-	Wait(10)
-	ClonePedToTarget(playerClone, plyrId)
-	Wait(10)
-	DeleteEntity(playerClone)
-    -- Wait(15000)
-    -- DeleteEntity(ped1)
-    -- DeleteEntity(ped2)
-    -- DeleteEntity(ped3)
+-- 	Wait(10)
+-- 	StartCutscene(0)
+--     --StartCutsceneAtCoords(pos[1], pos[2], pos[3] - 0.5, 0)
+-- 	Wait(10)
+-- 	ClonePedToTarget(playerClone, plyrId)
+-- 	Wait(10)
+-- 	DeleteEntity(playerClone)
+--     -- Wait(15000)
+--     -- DeleteEntity(ped1)
+--     -- DeleteEntity(ped2)
+--     -- DeleteEntity(ped3)
   
-	return playerClone
-end
+-- 	return playerClone
+-- end
 
-CreateThread(function()
-    while true do
-        Wait(5)
-        if isLoggedIn and not HeistStarted then
-            local ped = PlayerPedId()
-            local pos = GetEntityCoords(ped)
-            local dist = #(pos - vector3(1047.69, -727.03, 57.26))
-            if dist < 3 and not HeistStarted then
-                QBCore.Functions.TriggerCallback('qb-casinoheist:server:getCops', function(cops)
-                    if cops >= Config.MinimumPolice then
-                        LocalPlayer.state:set("inv_busy", true, true)
-                        --LoadCutscene('hs3_int', 0x105, 8)
-                        LoadCutscene('hs3_int')
-                        BeginCutsceneWithPlayer()
-                        Wait(194400)  -- Needs to be tweaked a tad but good enough for now
-                        RemoveCutscene()
-                        HeistStarted = true
-                        LocalPlayer.state:set("inv_busy", false, true)
-                        print(HeistStarted)
-                    else
-                        QBCore.Functions.Notify("Not Enough Cops on", "error")
-                    end
-                end)
-                Wait(3000)
-            end
-        end
-    end
-end)
+-- CreateThread(function()
+--     while true do
+--         Wait(5)
+--         if isLoggedIn and not HeistStarted then
+--             local ped = PlayerPedId()
+--             local pos = GetEntityCoords(ped)
+--             local dist = #(pos - vector3(1047.69, -727.03, 57.26))
+--             if dist < 3 and not HeistStarted then
+--                 QBCore.Functions.TriggerCallback('qb-casinoheist:server:getCops', function(cops)
+--                     if cops >= Config.MinimumPolice then
+--                         LocalPlayer.state:set("inv_busy", true, true)
+--                         --LoadCutscene('hs3_int', 0x105, 8)
+--                         LoadCutscene('hs3_int')
+--                         BeginCutsceneWithPlayer()
+--                         Wait(194400)  -- Needs to be tweaked a tad but good enough for now
+--                         RemoveCutscene()
+--                         HeistStarted = true
+--                         LocalPlayer.state:set("inv_busy", false, true)
+--                         print(HeistStarted)
+--                     else
+--                         QBCore.Functions.Notify("Not Enough Cops on", "error")
+--                     end
+--                 end)
+--                 Wait(3000)
+--             end
+--         end
+--     end
+-- end)
 
 -- function MissionNotification()
 -- 	Citizen.Wait(2000)

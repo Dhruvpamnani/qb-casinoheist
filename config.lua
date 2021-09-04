@@ -101,7 +101,7 @@ Config.KeycardDoors = {
         animationx = 949.88 + 0.2,
         animationy = 26.2 + 0.2,
         animationz = 71.83,
-        isOpen = true,  --needs to be false
+        isOpen = false,
         id = 1
     },
     [3] = {
