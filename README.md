@@ -1,32 +1,33 @@
-# qb-casinoheist
+# qb-casinoheist [WIP]
 
-## Credit
+## Notice
 
-ihyajb#7177
-
-googleoblivion#1337
+This resource was more of a learning prossess for me. It was my first script I even created from sratch with the help of googleoblivion. As more time went on it became the way I learned how to do good animations. This resource could still use a lot of love and ill try to keep working on it *(TRY)*. But after working on a "re-write" for like 5 months im kinda tried of it already again lol.
 
  ## Requirements
  
 * Must enable build `2189` or higher
  * [nui_doorlock](https://github.com/BerkieBb/nui_doorlock)
- * [DLC IPL Loader](https://forum.cfx.re/t/cayo-perico-casino-dlc-ipl-loader/2099391) (make sure to disable the vault door in the IPL)
+ * [DLC IPL Loader](https://forum.cfx.re/t/cayo-perico-casino-dlc-ipl-loader/2099391)
  * [mhacking](https://forum.cfx.re/t/release-simple-hacking-minigame/62095)
+ * Placeholder Resource
 
- ## How to Start it
- 1. Go to the casino
- 2. Hack the doors
- 3. Blow up the vault
- 4. Drill, Grab Cash. Grab Gold
+## Todo
 
-## Plans
+* Setup Doorlocks and test hackiing the doors works 100%
+* Fix some preformance issues
+* Fix rotation for Cash Cart
 
-* Better system for getting doorlocks. Its scuffed as fuck right now
+## Done
 
-* ~~Add a mission start Cutscene~~ Working on this now
+* Blowing up vault
+* Grabbing Cash Carts
+* Grabbing Gold Carts
+* Grabbing Cash Piles
+* Drill Saftey Depot Boxes
 
-* Add Diamond Cart with animation
+## Credit
 
-* Different ways to get into the vault (Loud, Stealth etc...)
+ihyajb#9723
 
-* Scripted Cam for Drilling
+googleoblivion#1337 *(kinda kekw)*

@@ -4,15 +4,8 @@ game 'gta5'
 description 'qb-casinoheist'
 version '1.0'
 
-shared_scripts { 
-	'@qb-core/import.lua',
-    'config.lua'
-}
+shared_script 'config.lua'
 
-client_scripts {
-    'client/*',
-}
+client_script 'client/main.lua'
 
-server_scripts {
-    'server/*',
-}
+server_script 'server/main.lua'
